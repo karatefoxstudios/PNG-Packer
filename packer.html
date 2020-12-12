@@ -6,9 +6,9 @@
     <body>
         <!--Basic UI for file upload-->
         <p>
-            <label>Upload a PNG Image:</label>
+            <label>Select a PNG Image:</label>
             <br>
-            <input type="file" name="fileupload" accept=".png">
+            <input type="file" accept=".png" id="fileupload" onchange="acceptImage();">
         </p>
         <p>
             <!--Call external packer.js code-->
