@@ -5,7 +5,7 @@ var PNG_FILE;
 /** @type {Array} */
 var CHUNKS = [];
 /** @type {Array} */
-var FILES;
+var FILES = [];
 
 async function imageChanged() {
     resetAll();
@@ -75,12 +75,69 @@ function resetAll() {
     document.querySelector('.pack-button button').setAttribute('disabled', ''); // Disable pack button
 }
 
-async function filesChanged() {
-    FILES = document.getElementById('filesupload').files;
+function filesChanged() {
+    let filesUpload = document.getElementById('filesupload');
+    let newFiles = filesUpload.files;
+    for (let i=0; i<newFiles.length; i++) {
+        FILES.push(newFiles[i]);
+    }
+    updateFilesList();
+    filesUpload.setAttribute('value', ''); // Clear files upload
+}
+
+function updateFilesList() {
+    let fileList = document.querySelector('.file-list table tbody');
+
+    // Delete listed files
+    let listed = document.querySelectorAll('.file-list tr:not(.file-header)')
+    for (let i=0; i<listed.length; i++) {
+        listed[i].remove();
+    }
+    // Add new children
+    for (let i=0; i<FILES.length; i++) {
+        let childRow = document.createElement('tr');
+
+        //Add File Name
+        let nameCol = document.createElement('td');
+        let nameP = document.createElement('p');
+        let nameText = document.createTextNode(FILES[i].name);
+        nameP.appendChild(nameText);
+        nameCol.appendChild(nameP);
+
+        // Add File Size
+        let sizeCol = document.createElement('td');
+        let sizeP = document.createElement('p');
+        let sizeText = document.createTextNode(FILES[i].size);
+        sizeP.appendChild(sizeText);
+        sizeCol.appendChild(sizeP);
+
+        // Add Removal Button
+        let removeCol = document.createElement('td');
+        let removeButton = document.createElement('button');
+        let removeText = document.createTextNode('X');
+        removeButton.setAttribute('onclick', `removeFile(${i});`)
+        removeButton.appendChild(removeText);
+        removeCol.appendChild(removeButton);
+
+        // Append everything to table row
+        childRow.appendChild(nameCol);
+        childRow.appendChild(sizeCol);
+        childRow.appendChild(removeCol);
+        fileList.appendChild(childRow);
+    }
 }
 
 /**
- * Convert chunk header bytes into a string
+ * Remove the selected file and update list.
+ * @param {Number} index 
+ */
+function removeFile(index) {
+    FILES.splice(index, 1);
+    updateFilesList();
+}
+
+/**
+ * Convert chunk header bytes into a string.
  * @param {Uint8Array} bytes
  * @returns {String}
  */
@@ -93,7 +150,7 @@ function stringFromChunkHeader(bytes) {
 }
 
 /**
- * Convert a chunk header string into bytes
+ * Convert a chunk header string into bytes.
  * @param {String} headerString
  * @returns {Uint8Array}
  */
@@ -118,7 +175,7 @@ async function readFileBytes(file, start, end) {
 }
 
 /**
- * Convert an array of bytes to an integer
+ * Convert an array of bytes to an integer.
  * @param {Uint8Array} bytes
  * @returns {Number}
  */
@@ -132,7 +189,7 @@ function intFromBytes(bytes) {
 }
 
 /**
- * Convert an integer to an array of bytes
+ * Convert an integer to an array of bytes.
  * @param {Number} integer
  * @param {Number} count 
  * @returns {Uint8Array} 

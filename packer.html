@@ -12,51 +12,60 @@
     <body>
         <!--Basic UI for file upload-->
         <table>
-            <tr>
-                <td>
-                    <div>
-                        <!--PNG Image Selection Box-->
-                        <label>Select a PNG image:</label>
-                        <br>
-                        <input type="file" accept=".png" id="imageupload" onchange="imageChanged();">
-                    </div>
-                </td>
-                <td>
-                    <div>
-                        <!--Add File Box-->
-                        <label>Add files:</label>
-                        <br>
-                        <input type="file" id="filesupload" onchange="filesChanged();" multiple>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div>
-                        <!--Image Preview-->
-                        Image
-                    </div>
-                </td>
-                <td>
-                    <div class="file-list">
-                        <!--File List-->
-                        <table>
-                            <tr>
-                                <td><p>File 1</p></td>
-                                <td><button>X</button></td>
-                            </tr>
-                        </table>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="pack-button">
-                        <!--Pack Button-->
-                        <button disabled>Pack PNG</button>
-                    </div>
-                </td>
-            </tr>
+            <tbody>
+                <tr>
+                    <td>
+                        <div>
+                            <!--PNG Image Selection Box-->
+                            <label>Select a PNG image:</label>
+                            <br>
+                            <input type="file" accept=".png" id="imageupload" onchange="imageChanged();">
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <!--Add File Box-->
+                            <label>Add files:</label>
+                            <br>
+                            <input type="file" id="filesupload" onchange="filesChanged();" multiple>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div>
+                            <!--Image Preview-->
+                            Image
+                        </div>
+                    </td>
+                    <td>
+                        <div class="file-list">
+                            <!--File List-->
+                            <table>
+                                <tbody>
+                                    <tr class="file-header">
+                                        <th>File Name:</th>
+                                        <th>Size:</th>
+                                    </tr>
+                                    <tr>
+                                        <td><p>File 1</p></td>
+                                        <td><p>0</p></td>
+                                        <td><button>X</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <div class="pack-button">
+                            <!--Pack Button-->
+                            <button disabled>Pack PNG</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
         </table>
     </body>
 </html>

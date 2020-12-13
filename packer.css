@@ -16,4 +16,12 @@ table, th, td {
 }
 .file-list td {
     border: none;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+.file-list th {
+    border: none;
+    text-align: left;
+    padding-left: 10px;
+    padding-right: 10px;
 }
