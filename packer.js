@@ -82,7 +82,7 @@ function filesChanged() {
         FILES.push(newFiles[i]);
     }
     updateFilesList();
-    filesUpload.setAttribute('value', ''); // Clear files upload
+    filesUpload.value=''; // Clear files upload
 }
 
 function updateFilesList() {
