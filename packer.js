@@ -17,6 +17,10 @@ async function imageChanged() {
 
     // The file matches the PNG header.
     console.log('Is a PNG!');
+
+    // Test: Save the PNG back to disk.
+    let stream = streamSaver.createWriteStream('image.png', {size: PNG_FILE.size});
+    new Response(PNG_FILE).body.pipeTo(stream);
 }
 
 function imageNotPNG() {
