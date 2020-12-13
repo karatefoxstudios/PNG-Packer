@@ -73,6 +73,8 @@ function resetAll() {
     PNG_FILE = undefined;
     CHUNKS = [];
     document.querySelector('.pack-button button').setAttribute('disabled', ''); // Disable pack button
+    FILES = [];
+    updateFilesList();
 }
 
 function filesChanged() {
