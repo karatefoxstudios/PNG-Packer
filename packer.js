@@ -1,4 +1,5 @@
 const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+const PREVIEW_LIMIT = 35840000;
 
 /** @type {File} */
 var PNG_FILE;
@@ -25,6 +26,16 @@ async function imageChanged() {
     console.log(CHUNKS)
 
     document.querySelector('.pack-button button').removeAttribute('disabled', ''); // Enable pack button
+
+    // If PNG is under the preview limit, display it
+    if (PNG_FILE.size < PREVIEW_LIMIT) {
+        let reader = new FileReader();
+        reader.onload = (event) => {
+            let image = document.querySelector('.image-preview img');
+            image.setAttribute('src', event.target.result);
+        };
+        reader.readAsDataURL(PNG_FILE);
+    }
 
     /*
     // Test: Save the PNG back to disk.

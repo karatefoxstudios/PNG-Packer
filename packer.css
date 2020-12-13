@@ -10,6 +10,11 @@ table, th, td {
     display: inline;
 }
 
+.file-list {
+    vertical-align: top;
+    margin: auto;
+}
+
 .file-list table {
     border: none;
     margin: auto;
@@ -24,4 +29,8 @@ table, th, td {
     text-align: left;
     padding-left: 10px;
     padding-right: 10px;
+}
+
+.image-preview img {
+    max-width: 200px;
 }
