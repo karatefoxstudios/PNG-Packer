@@ -7,7 +7,7 @@ async function imageChanged() {
     resetAll();
     PNG_FILE = document.getElementById('fileupload').files[0];
     
-    let fileHeader = new Uint8Array(await PNG_FILE.slice(0, 8).arrayBuffer());
+    let fileHeader = await readFileBytes(PNG_FILE, 0, 8);
     for (let i=0; i<PNG_HEADER.length; i++) {
         if (PNG_HEADER[i] != fileHeader[i]) {
             imageNotPNG();
@@ -29,6 +29,18 @@ function imageNotPNG() {
 
 function resetAll() {
 
+}
+
+/**
+ * Read a range of bytes from a File.
+ * @param {File} file
+ * @param {Number} start
+ * @param {Number} end
+ * @returns {Uint8Array}
+ */
+async function readFileBytes(file, start, end) {
+    let buffer = await file.arrayBuffer();
+    return new Uint8Array(buffer);
 }
 
 /**
