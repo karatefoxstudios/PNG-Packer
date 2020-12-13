@@ -32,6 +32,32 @@ function resetAll() {
 }
 
 /**
+ * Convert chunk header bytes into a string
+ * @param {Uint8Array} bytes
+ * @returns {String}
+ */
+function stringFromChunkHeader(bytes) {
+    headerString = "";
+    for (let i=0; i<bytes.length; i++) {
+        headerString += String.fromCharCode(bytes[i]);
+    }
+    return headerString;
+}
+
+/**
+ * Convert a chunk header string into bytes
+ * @param {String} headerString
+ * @returns {Uint8Array}
+ */
+function chunkHeaderFromString(headerString) {
+    let bytes = new Uint8Array(headerString.length);
+    for (let i=0; i<headerString.length; i++) {
+        bytes[i] = headerString.charCodeAt(i);
+    }
+    return bytes;
+}
+
+/**
  * Read a range of bytes from a File.
  * @param {File} file
  * @param {Number} start
