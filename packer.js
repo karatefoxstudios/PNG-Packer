@@ -3,17 +3,28 @@ const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
 /** @type {File} */
 var PNG_FILE;
 
-function imageChanged() {
+async function imageChanged() {
     resetAll();
     PNG_FILE = document.getElementById('fileupload').files[0];
+    
+    let fileHeader = new Uint8Array(await PNG_FILE.slice(0, 8).arrayBuffer());
+    for (let i=0; i<PNG_HEADER.length; i++) {
+        if (PNG_HEADER[i] != fileHeader[i]) {
+            imageNotPNG();
+            return;
+        }
+    }
+
+    // The file matches the PNG header.
+    console.log('Is a PNG!');
+}
+
+function imageNotPNG() {
+    alert('This file is not a PNG!')
 }
 
 function resetAll() {
 
-}
-
-function imageNotPNG() {
-    console.log('Not a PNG!')
 }
 
 /**
