@@ -24,6 +24,8 @@ async function imageChanged() {
 
     console.log(CHUNKS)
 
+    document.querySelector('.pack-button button').removeAttribute('disabled', ''); // Enable pack button
+
     /*
     // Test: Save the PNG back to disk.
     let stream = streamSaver.createWriteStream('image.png', {size: PNG_FILE.size});
@@ -70,6 +72,7 @@ function imageNotPNG() {
 function resetAll() {
     PNG_FILE = undefined;
     CHUNKS = [];
+    document.querySelector('.pack-button button').setAttribute('disabled', ''); // Disable pack button
 }
 
 async function filesChanged() {
