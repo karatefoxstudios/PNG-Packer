@@ -1,23 +1,45 @@
-var pngReader = new FileReader();
-pngReader.onload = updateImageDetails;
+const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
 
-const PNG_HEADER = [137, 80, 78, 71, 13, 10, 26, 10];
+/** @type {File} */
+var PNG_FILE;
 
-function test() {
-    alert('Tested!');
+function imageChanged() {
+    resetAll();
+    PNG_FILE = document.getElementById('fileupload').files[0];
 }
 
-function acceptImage() {
-    let img = document.getElementById('fileupload').files[0];
-    pngReader.readAsArrayBuffer(img);
+function resetAll() {
+
 }
 
-function updateImageDetails() {
-    let buffer = new Uint8Array(pngReader.result);
-    // Quick test. Determine whether the uploaded image is a PNG or not.
-    let correctHeader = true;
-    for (let i=0; i<PNG_HEADER.length; i++) {
-        if (PNG_HEADER[i] != buffer[i]) correctHeader = false;
+function imageNotPNG() {
+    console.log('Not a PNG!')
+}
+
+/**
+ * Convert an array of bytes to an integer
+ * @param {Uint8Array} bytes
+ * @returns {Number}
+ */
+function intFromBytes(bytes) {
+    bytes = bytes.reverse();
+    total = 0;
+    for (let i=0; i<bytes.length; i++) {
+        total += bytes[i] << (i*8);
     }
-    alert("This is " + (correctHeader ? "" : "not ") + "a PNG image.");
+    return total;
+}
+
+/**
+ * Convert an integer to an array of bytes
+ * @param {Number} integer
+ * @param {Number} count 
+ * @returns {Uint8Array} 
+ */
+function bytesFromInt(integer, count) {
+    let bytes = new Uint8Array(count);
+    for (let i=0; i<count; i++) {
+        bytes[i] = (integer >>> (i*8)) & 0xFF;
+    }
+    return bytes.reverse();
 }
