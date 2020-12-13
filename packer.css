@@ -1,0 +1,12 @@
+th {
+    text-align: left;
+    font-weight: normal;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+.pack-button {
+    text-align: center;
+}

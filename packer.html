@@ -2,26 +2,59 @@
 <html>
     <head>
         <title>PNG Packer Test</title>
+        <!--Load styles-->
+        <link rel="stylesheet" href="packer.css">
+        <!--Load packer.js-->
+        <script src="packer.js" defer></script>
+        <!--Load StreamSaver.js-->
+        <script src="https://cdn.jsdelivr.net/npm/streamsaver@2.0.5/StreamSaver.min.js" defer></script>
     </head>
     <body>
         <!--Basic UI for file upload-->
-        <p>
-            <label>Select a PNG image:</label>
-            <br>
-            <input type="file" accept=".png" id="imageupload" onchange="imageChanged();">
-        </p>
-        <p>
-            <label>Select files to pack:</label>
-            <br>
-            <input type="file" id="filesupload" onchange="filesChanged();">
-        </p>
-        <p>
-            <button>Pack!</button>
-        </p>
-        </form>
+        <table>
+            <tr>
+                <th>
+                    <div>
+                        <!--PNG Image Selection Box-->
+                        <label>Select a PNG image:</label>
+                        <br>
+                        <input type="file" accept=".png" id="imageupload" onchange="imageChanged();">
+                    </div>
+                </th>
+                <th>
+                    <div>
+                        <!--Add File Box-->
+                        <label>Add a file:</label>
+                        <br>
+                        <input type="file" id="filesupload" onchange="filesChanged();">
+                    </div>
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    <div>
+                        <!--Image Preview-->
+                        Image
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <!--File List-->
+                        <ul>
+                            <li>File 1</li>
+                            <li>File 2</li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="pack-button">
+                        <!--Pack Button-->
+                        <button>Pack PNG</button>
+                    </div>
+                </td>
+            </tr>
+        </table>
     </body>
-    <!--Load packer.js-->
-    <script src="packer.js"></script>
-    <!--Load StreamSaver.js-->
-    <script src="https://cdn.jsdelivr.net/npm/streamsaver@2.0.5/StreamSaver.min.js"></script>
 </html>
