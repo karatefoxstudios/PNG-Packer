@@ -86,6 +86,8 @@ function resetAll() {
     document.querySelector('.pack-button button').setAttribute('disabled', ''); // Disable pack button
     FILES = [];
     updateFilesList();
+    document.querySelector('.image-preview img').setAttribute('src', ''); // Remove preview image
+    //document.getElementById('imageupload').value = ''; // Clear image input box
 }
 
 function filesChanged() {
