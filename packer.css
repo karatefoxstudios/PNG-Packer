@@ -1,12 +1,19 @@
-th {
-    text-align: left;
-    font-weight: normal;
-}
-
 table, th, td {
     border: 1px solid black;
 }
 
 .pack-button {
     text-align: center;
+}
+
+.file-list p {
+    display: inline;
+}
+
+.file-list table {
+    border: none;
+    margin: auto;
+}
+.file-list td {
+    border: none;
 }

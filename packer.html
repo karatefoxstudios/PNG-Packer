@@ -13,22 +13,22 @@
         <!--Basic UI for file upload-->
         <table>
             <tr>
-                <th>
+                <td>
                     <div>
                         <!--PNG Image Selection Box-->
                         <label>Select a PNG image:</label>
                         <br>
                         <input type="file" accept=".png" id="imageupload" onchange="imageChanged();">
                     </div>
-                </th>
-                <th>
+                </td>
+                <td>
                     <div>
                         <!--Add File Box-->
                         <label>Add files:</label>
                         <br>
                         <input type="file" id="filesupload" onchange="filesChanged();" multiple>
                     </div>
-                </th>
+                </td>
             </tr>
             <tr>
                 <td>
@@ -38,12 +38,14 @@
                     </div>
                 </td>
                 <td>
-                    <div>
+                    <div class="file-list">
                         <!--File List-->
-                        <ul>
-                            <li>File 1 <button>X</button></li>
-                            <li>File 2 <button>X</button></li>
-                        </ul>
+                        <table>
+                            <tr>
+                                <td><p>File 1</p></td>
+                                <td><button>X</button></td>
+                            </tr>
+                        </table>
                     </div>
                 </td>
             </tr>
