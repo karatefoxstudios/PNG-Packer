@@ -7,7 +7,7 @@ var CHUNKS = [];
 
 async function imageChanged() {
     resetAll();
-    PNG_FILE = document.getElementById('fileupload').files[0];
+    PNG_FILE = document.getElementById('imageupload').files[0];
     
     let fileHeader = await readFileBytes(PNG_FILE, 0, 8);
     for (let i=0; i<PNG_HEADER.length; i++) {

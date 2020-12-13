@@ -6,13 +6,17 @@
     <body>
         <!--Basic UI for file upload-->
         <p>
-            <label>Select a PNG Image:</label>
+            <label>Select a PNG image:</label>
             <br>
-            <input type="file" accept=".png" id="fileupload" onchange="imageChanged();">
+            <input type="file" accept=".png" id="imageupload" onchange="imageChanged();">
         </p>
         <p>
-            <!--Call external packer.js code-->
-            <!--<button type="button" onclick="test();">Submit</button>-->
+            <label>Select files to pack:</label>
+            <br>
+            <input type="file" id="filesupload">
+        </p>
+        <p>
+            <button>Pack!</button>
         </p>
         </form>
     </body>
