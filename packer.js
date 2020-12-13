@@ -65,7 +65,7 @@ function chunkHeaderFromString(headerString) {
  * @returns {Uint8Array}
  */
 async function readFileBytes(file, start, end) {
-    let buffer = await file.arrayBuffer();
+    let buffer = await file.slice(start, end).arrayBuffer();
     return new Uint8Array(buffer);
 }
 
