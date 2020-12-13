@@ -2,6 +2,8 @@ const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
 
 /** @type {File} */
 var PNG_FILE;
+/** @type {Array} */
+var CHUNKS = [];
 
 async function imageChanged() {
     resetAll();
@@ -16,11 +18,47 @@ async function imageChanged() {
     }
 
     // The file matches the PNG header.
-    console.log('Is a PNG!');
+    await locateChunks();
 
+    console.log(CHUNKS)
+
+    /*
     // Test: Save the PNG back to disk.
     let stream = streamSaver.createWriteStream('image.png', {size: PNG_FILE.size});
     new Response(PNG_FILE).body.pipeTo(stream);
+    */
+}
+
+async function locateChunks() {
+    let filesize = PNG_FILE.size;
+    let index = PNG_HEADER.length; // Skip over the PNG header
+    while (index != filesize) {
+        // Read the chunk length
+        let lengthBytes = await readFileBytes(PNG_FILE, index, index+4);
+        let length = intFromBytes(lengthBytes);
+        index += 4;
+        // Read the chunk header
+        let headerBytes = await readFileBytes(PNG_FILE, index, index+4);
+        let header = stringFromChunkHeader(headerBytes);
+        //console.log(header);
+        index += 4;
+        // Mark the chunk data indices
+        let dataStart = index;
+        index += length;
+        let dataEnd = index;
+        // Read the chunk checksum
+        let checksumBytes = await readFileBytes(PNG_FILE, index, index+4);
+        let checksum = intFromBytes(checksumBytes);
+        index += 4;
+
+        CHUNKS.push({
+            header: header,
+            length: length,
+            dataStart: dataStart,
+            dataEnd: dataEnd,
+            checksum: checksum
+        });
+    }
 }
 
 function imageNotPNG() {
@@ -28,7 +66,8 @@ function imageNotPNG() {
 }
 
 function resetAll() {
-
+    PNG_FILE = undefined;
+    CHUNKS = [];
 }
 
 /**
