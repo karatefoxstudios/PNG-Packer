@@ -4,6 +4,8 @@ const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
 var PNG_FILE;
 /** @type {Array} */
 var CHUNKS = [];
+/** @type {Array} */
+var FILES;
 
 async function imageChanged() {
     resetAll();
@@ -68,6 +70,10 @@ function imageNotPNG() {
 function resetAll() {
     PNG_FILE = undefined;
     CHUNKS = [];
+}
+
+async function filesChanged() {
+    FILES = document.getElementById('filesupload').files;
 }
 
 /**
