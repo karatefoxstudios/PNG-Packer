@@ -16,7 +16,7 @@ async function imageChanged() {
     let fileHeader = await readFileBytes(PNG_FILE, 0, 8);
     for (let i=0; i<PNG_HEADER.length; i++) {
         if (PNG_HEADER[i] != fileHeader[i]) {
-            imageNotPNG();
+            setErrorMessage('This file is not a PNG.')
             return;
         }
     }
