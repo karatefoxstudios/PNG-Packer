@@ -254,3 +254,30 @@ function bytesFromInt(integer, count) {
     }
     return bytes.reverse();
 }
+
+/**
+ * Concatenate two Uint8Array objects
+ * @param {Uint8Array} array1 
+ * @param {Uint8Array} array2 
+ * @returns {Uint8Array}
+ */
+function int8Concat(array1, array2) {
+    let newArray = new Uint8Array(array1.length + array2.length);
+    // Copy values over
+    for (let i=0; i<array1.length; i++) {
+        newArray[i] = array1[i];
+    }
+    for (let i=array1.length; i<newArray.length; i++) {
+        newArray[i] = array2[i-array1.length];
+    }
+    return newArray;
+}
+
+/**
+ * Convert a Blob to a Uint8Array
+ * @param {Blob} blob 
+ * @returns {Uint8Array}
+ */
+async function blobToInt8(blob) {
+    return new Uint8Array(await blob.arrayBuffer());
+}
