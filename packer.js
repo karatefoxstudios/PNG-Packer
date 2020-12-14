@@ -73,6 +73,7 @@ async function packFiles() {
 async function writePackedChunk(writer) {
     const headerBytes = chunkHeaderFromString(PACKED_HEADER);
     let file = FILES[0];
+    const headerBytes = bytesFromString(PACKED_HEADER);
     let fileBytes = new Uint8Array(await file.arrayBuffer());
     let fileCRC = CRC32.buf(int8Concat(headerBytes, fileBytes));
 
@@ -203,7 +204,7 @@ function removeFile(index) {
  * @param {Uint8Array} bytes
  * @returns {String}
  */
-function stringFromChunkHeader(bytes) {
+function stringFromBytes(bytes) {
     headerString = "";
     for (let i=0; i<bytes.length; i++) {
         headerString += String.fromCharCode(bytes[i]);
@@ -216,7 +217,7 @@ function stringFromChunkHeader(bytes) {
  * @param {String} headerString
  * @returns {Uint8Array}
  */
-function chunkHeaderFromString(headerString) {
+function bytesFromString(headerString) {
     let bytes = new Uint8Array(headerString.length);
     for (let i=0; i<headerString.length; i++) {
         bytes[i] = headerString.charCodeAt(i);
