@@ -149,11 +149,6 @@ async function locateChunks() {
     }
 }
 
-
-function imageNotPNG() {
-    alert('This file is not a PNG!')
-}
-
 function resetAll() {
     PNG_FILE = undefined;
     CHUNKS = [];
