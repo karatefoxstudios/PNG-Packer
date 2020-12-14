@@ -37,12 +37,6 @@ async function imageChanged() {
         };
         reader.readAsDataURL(PNG_FILE);
     }
-
-    /*
-    // Test: Save the PNG back to disk.
-    let stream = streamSaver.createWriteStream('image.png', {size: PNG_FILE.size});
-    new Response(PNG_FILE).body.pipeTo(stream);
-    */
 }
 
 async function packFiles() {
