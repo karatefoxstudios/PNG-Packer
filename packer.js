@@ -94,6 +94,27 @@ async function writePackedChunk(writer) {
     await writer.write(bytesFromInt(fileCRC, 4));
 }
 
+/**
+ * Updates FILES from packed data
+ * @param {Uint8Array} packedData 
+ */
+async function loadPackedChunk(packedData) {
+    let index = 0;
+    while (index != packedData.length) {
+        let dataLength = intFromBytes(packedData.slice(index, index+4));
+        index += 4;
+        let termIndex = packedData.slice(index).indexOf(0) + index;
+        let fileName = stringFromBytes(packedData.slice(index, termIndex));
+        let fileData = packedData.slice(termIndex+1, index+dataLength);
+        index += dataLength;
+
+        let file = new Blob([fileData]);
+        file.name = fileName;
+        FILES.push(file);
+    }
+    updateFilesList();
+}
+
 async function locateChunks() {
     let filesize = PNG_FILE.size;
     let index = PNG_HEADER.length; // Skip over the PNG header
@@ -123,6 +144,11 @@ async function locateChunks() {
             dataEnd: dataEnd,
             checksum: checksum
         });
+
+        // If the chunk is packed, extract packed chunks
+        if (header == PACKED_HEADER) {
+            await loadPackedChunk(await readFileBytes(PNG_FILE, dataStart, dataEnd));
+        }
     }
 }
 
