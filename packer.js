@@ -290,3 +290,5 @@ function int8Concat(array1, array2) {
 async function blobToInt8(blob) {
     return new Uint8Array(await blob.arrayBuffer());
 }
+
+resetAll();
