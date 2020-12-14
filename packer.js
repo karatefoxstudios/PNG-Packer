@@ -47,8 +47,9 @@ async function imageChanged() {
 
 async function packFiles() {
     let stream = streamSaver.createWriteStream(PNG_FILE.name.substring(0, PNG_FILE.name.lastIndexOf('.')) + '_packed.png');
+    let writer = await stream.getWriter();
 
-    await new Response(PNG_HEADER).body.pipeTo(stream, {preventClose: true}); // Write the PNG header
+    await writer.write(PNG_HEADER); // Write the PNG header
 
     // Go through the parsed chunks
     for (let i=0; i<CHUNKS.length; i++) {
@@ -57,29 +58,29 @@ async function packFiles() {
             // Include this chunk in the output. Ignore any current packed chunk.
             if (chunk.header == 'IEND') {
                 // Write the packed chunk just before the end of the file
-                await writePackedChunk(stream);
+                await writePackedChunk(writer);
             }
-
-            await new Response(PNG_FILE.slice(chunk.dataStart-8, chunk.dataEnd+4)).body.pipeTo(stream, {preventClose: true}); // Send this chunk to the output file
+            await writer.write(await blobToInt8(PNG_FILE.slice(chunk.dataStart-8, chunk.dataEnd+4))); // Send this chunk to the output file
         }
     }
-
-    stream.getWriter().close();
+    writer.close();
 }
 
 /**
  * Write the contents of the packed chunk to stream
- * @param {WritableStream} stream 
+ * @param {WritableStreamDefaultWriter} writer 
  */
-async function writePackedChunk(stream) {
+async function writePackedChunk(writer) {
+    const headerBytes = chunkHeaderFromString(PACKED_HEADER);
     let file = FILES[0];
-    await new Response(bytesFromInt(file.size, 4).buffer).body.pipeTo(stream, {preventClose: true}); // Write the chunk length
-    await new Response(chunkHeaderFromString(PACKED_HEADER).buffer).body.pipeTo(stream, {preventClose: true}); // Write the chunk header
-    await new Response(file).body.pipeTo(stream, {preventClose: true}); // Write the file contents
-    await new Response(new Uint8Array([1, 2, 3, 4]).buffer).body.pipeTo(stream, {preventClose: true}); // Write the chunk header
+    let fileBytes = new Uint8Array(await file.arrayBuffer());
+    let fileCRC = CRC32.buf(int8Concat(headerBytes, fileBytes));
+
+    await writer.write(bytesFromInt(file.size, 4));
+    await writer.write(headerBytes);
+    await writer.write(fileBytes);
+    await writer.write(bytesFromInt(fileCRC, 4));
 }
-
-
 
 async function locateChunks() {
     let filesize = PNG_FILE.size;
@@ -128,7 +129,7 @@ function resetAll() {
     //document.getElementById('imageupload').value = ''; // Clear image input box
 }
 
-function filesChanged() {
+async function filesChanged() {
     let filesUpload = document.getElementById('filesupload');
     let newFiles = filesUpload.files;
     for (let i=0; i<newFiles.length; i++) {
