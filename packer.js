@@ -26,7 +26,7 @@ async function imageChanged() {
 
     console.log(CHUNKS)
 
-    document.querySelector('.pack-button button').removeAttribute('disabled', ''); // Enable pack button
+    setPackingEnabled(true);
 
     // If PNG is under the preview limit, display it
     if (PNG_FILE.size < PREVIEW_LIMIT) {
@@ -122,7 +122,7 @@ function imageNotPNG() {
 function resetAll() {
     PNG_FILE = undefined;
     CHUNKS = [];
-    document.querySelector('.pack-button button').setAttribute('disabled', ''); // Disable pack button
+    setPackingEnabled(false);
     FILES = [];
     updateFilesList();
     document.querySelector('.image-preview img').setAttribute('src', ''); // Remove preview image
@@ -178,6 +178,14 @@ function updateFilesList() {
         childRow.appendChild(sizeCol);
         childRow.appendChild(removeCol);
         fileList.appendChild(childRow);
+    }
+}
+
+function setPackingEnabled(status) {
+    let items = document.querySelectorAll('.pack-button *');
+    for (let i=0; i<items.length; i++) {
+        if (status) items[i].removeAttribute('disabled');
+        else items[i].setAttribute('disabled', '');
     }
 }
 
