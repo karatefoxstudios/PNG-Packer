@@ -58,7 +58,7 @@ async function packFiles() {
             // Include this chunk in the output. Ignore any current packed chunk.
             if (chunk.header == 'IEND') {
                 // Write the packed chunk just before the end of the file
-                await writePackedChunk(writer);
+                if (FILES.length > 0) await writePackedChunk(writer);
             }
             await writer.write(await blobToInt8(PNG_FILE.slice(chunk.dataStart-8, chunk.dataEnd+4))); // Send this chunk to the output file
         }
