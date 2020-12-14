@@ -200,10 +200,18 @@ function updateFilesList() {
         sizeP.appendChild(sizeText);
         sizeCol.appendChild(sizeP);
 
+        // Add Extract Button
+        let extractCol = document.createElement('td');
+        let extractButton = document.createElement('button');
+        let extractText = document.createTextNode('Extract');
+        extractButton.setAttribute('onclick', `extractFile(${i});`);
+        extractButton.appendChild(extractText);
+        extractCol.appendChild(extractButton);
+
         // Add Removal Button
         let removeCol = document.createElement('td');
         let removeButton = document.createElement('button');
-        let removeText = document.createTextNode('X');
+        let removeText = document.createTextNode('Delete');
         removeButton.setAttribute('onclick', `removeFile(${i});`)
         removeButton.appendChild(removeText);
         removeCol.appendChild(removeButton);
@@ -211,6 +219,7 @@ function updateFilesList() {
         // Append everything to table row
         childRow.appendChild(nameCol);
         childRow.appendChild(sizeCol);
+        childRow.appendChild(extractCol);
         childRow.appendChild(removeCol);
         fileList.appendChild(childRow);
     }
@@ -231,6 +240,15 @@ function setPackingEnabled(status) {
 function removeFile(index) {
     FILES.splice(index, 1);
     updateFilesList();
+}
+
+/**
+ * Extract the selected file
+ * @param {Number} index 
+ */
+function extractFile(index) {
+    let stream = streamSaver.createWriteStream(FILES[index].name, {size: FILES[index].length});
+    new Response(FILES[index]).body.pipeTo(stream);
 }
 
 /**
