@@ -17,11 +17,16 @@
             <tbody>
                 <tr>
                     <td>
-                        <div>
+                        <div class="png-selection">
                             <!--PNG Image Selection Box-->
                             <label>Select a PNG image:</label>
                             <br>
-                            <input type="file" accept=".png" id="imageupload" onchange="imageChanged();">
+                            <input type="file" accept=".png" id="imageupload"">
+                            <br>
+                            <label>Password:</label><input id="pngpassword">
+                            <p id="errormessage">Error!</p>
+                            <br id="errorbreak">
+                            <button onclick="imageChanged();">Submit</button>
                         </div>
                     </td>
                     <td>

@@ -34,3 +34,12 @@ table, th, td {
 .image-preview img {
     max-width: 200px;
 }
+
+.png-selection {
+    text-align: center;
+}
+
+.png-selection p {
+    color: red;
+    margin: 0;
+}

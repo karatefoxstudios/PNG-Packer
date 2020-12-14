@@ -162,6 +162,7 @@ function resetAll() {
     updateFilesList();
     document.querySelector('.image-preview img').setAttribute('src', ''); // Remove preview image
     //document.getElementById('imageupload').value = ''; // Clear image input box
+    setErrorMessage('');
 }
 
 async function filesChanged() {
@@ -230,6 +231,19 @@ function setPackingEnabled(status) {
     for (let i=0; i<items.length; i++) {
         if (status) items[i].removeAttribute('disabled');
         else items[i].setAttribute('disabled', '');
+    }
+}
+
+function setErrorMessage(msg) {
+    item = document.getElementById('errormessage');
+    brk = document.getElementById('errorbreak');
+    if (msg) {
+        item.removeAttribute('style');
+        item.textContent = msg;
+        brk.setAttribute('style', 'display: none;');
+    } else {
+        item.setAttribute('style', 'display: none;');
+        brk.removeAttribute('style');
     }
 }
 
