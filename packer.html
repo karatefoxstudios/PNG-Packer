@@ -8,6 +8,8 @@
         <script src="packer.js" defer></script>
         <!--Load StreamSaver.js-->
         <script src="https://cdn.jsdelivr.net/npm/streamsaver@2.0.5/StreamSaver.min.js" defer></script>
+        <!--Load CRC32.js-->
+        <script src="https://cdn.jsdelivr.net/npm/crc-32@1.2.0/crc32.min.js" defer></script>
     </head>
     <body>
         <!--Basic UI for file upload-->
@@ -61,7 +63,7 @@
                     <td colspan="2">
                         <div class="pack-button">
                             <!--Pack Button-->
-                            <button disabled>Pack PNG</button>
+                            <button onclick="packFiles();" disabled>Pack PNG</button>
                         </div>
                     </td>
                 </tr>

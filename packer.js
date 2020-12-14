@@ -1,4 +1,5 @@
 const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+const PACKED_HEADER = 'paCk';
 const PREVIEW_LIMIT = 35840000;
 
 /** @type {File} */
@@ -44,6 +45,42 @@ async function imageChanged() {
     */
 }
 
+async function packFiles() {
+    let stream = streamSaver.createWriteStream(PNG_FILE.name.substring(0, PNG_FILE.name.lastIndexOf('.')) + '_packed.png');
+
+    await new Response(PNG_HEADER).body.pipeTo(stream, {preventClose: true}); // Write the PNG header
+
+    // Go through the parsed chunks
+    for (let i=0; i<CHUNKS.length; i++) {
+        let chunk = CHUNKS[i];
+        if (chunk.header != PACKED_HEADER) {
+            // Include this chunk in the output. Ignore any current packed chunk.
+            if (chunk.header == 'IEND') {
+                // Write the packed chunk just before the end of the file
+                await writePackedChunk(stream);
+            }
+
+            await new Response(PNG_FILE.slice(chunk.dataStart-8, chunk.dataEnd+4)).body.pipeTo(stream, {preventClose: true}); // Send this chunk to the output file
+        }
+    }
+
+    stream.getWriter().close();
+}
+
+/**
+ * Write the contents of the packed chunk to stream
+ * @param {WritableStream} stream 
+ */
+async function writePackedChunk(stream) {
+    let file = FILES[0];
+    await new Response(bytesFromInt(file.size, 4).buffer).body.pipeTo(stream, {preventClose: true}); // Write the chunk length
+    await new Response(chunkHeaderFromString(PACKED_HEADER).buffer).body.pipeTo(stream, {preventClose: true}); // Write the chunk header
+    await new Response(file).body.pipeTo(stream, {preventClose: true}); // Write the file contents
+    await new Response(new Uint8Array([1, 2, 3, 4]).buffer).body.pipeTo(stream, {preventClose: true}); // Write the chunk header
+}
+
+
+
 async function locateChunks() {
     let filesize = PNG_FILE.size;
     let index = PNG_HEADER.length; // Skip over the PNG header
@@ -75,6 +112,7 @@ async function locateChunks() {
         });
     }
 }
+
 
 function imageNotPNG() {
     alert('This file is not a PNG!')
