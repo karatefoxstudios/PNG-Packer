@@ -24,8 +24,6 @@ async function imageChanged() {
     // The file matches the PNG header.
     await locateChunks();
 
-    console.log(CHUNKS)
-
     setPackingEnabled(true);
 
     // If PNG is under the preview limit, display it
@@ -126,7 +124,6 @@ async function locateChunks() {
         // Read the chunk header
         let headerBytes = await readFileBytes(PNG_FILE, index, index+4);
         let header = stringFromBytes(headerBytes);
-        //console.log(header);
         index += 4;
         // Mark the chunk data indices
         let dataStart = index;
