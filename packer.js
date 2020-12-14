@@ -93,7 +93,7 @@ async function locateChunks() {
         index += 4;
         // Read the chunk header
         let headerBytes = await readFileBytes(PNG_FILE, index, index+4);
-        let header = stringFromChunkHeader(headerBytes);
+        let header = stringFromBytes(headerBytes);
         //console.log(header);
         index += 4;
         // Mark the chunk data indices
