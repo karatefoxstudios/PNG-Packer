@@ -71,15 +71,38 @@ async function packFiles() {
  * @param {WritableStreamDefaultWriter} writer 
  */
 async function writePackedChunk(writer) {
-    const headerBytes = chunkHeaderFromString(PACKED_HEADER);
-    let file = FILES[0];
+    /*
+    Packed Data Format:
+    Len | Type | Info
+    4   : uint : Length of the file name + file data
+    n   : str  : Null-terminated string containing the file name
+    n   :  X   | File data
+    */
     const headerBytes = bytesFromString(PACKED_HEADER);
-    let fileBytes = new Uint8Array(await file.arrayBuffer());
-    let fileCRC = CRC32.buf(int8Concat(headerBytes, fileBytes));
 
-    await writer.write(bytesFromInt(file.size, 4));
+    let packedData = new Uint8Array();
+
+    for (let i=0; i<FILES.length; i++) {
+        let file = FILES[i];
+        let name = file.name;
+        console.log(`name: ${name}`)
+        let fileData = int8Concat(bytesFromString(name), new Uint8Array(1)); // Add name + null-termination
+        console.log(`fileData: ${fileData}`)
+        let fileBytes = await blobToInt8(file);
+        console.log(`fileBytes: ${fileBytes}`)
+        fileData = int8Concat(fileData, fileBytes); // Combine null-terminated string to file bytes
+        console.log(`fileData (term): ${fileData}`)
+        fileData = int8Concat(bytesFromInt(fileData.length, 4), fileData); // Add the length of the data
+        console.log(`fileData (len+term): ${fileData}`)
+
+        packedData = int8Concat(packedData, fileData);
+        console.log(`packedData: ${packedData}`)
+    }
+    let fileCRC = CRC32.buf(int8Concat(headerBytes, packedData));
+
+    await writer.write(bytesFromInt(packedData.length, 4));
     await writer.write(headerBytes);
-    await writer.write(fileBytes);
+    await writer.write(packedData);
     await writer.write(bytesFromInt(fileCRC, 4));
 }
 
