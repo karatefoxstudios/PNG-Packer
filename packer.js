@@ -93,6 +93,17 @@ async function writePackedChunk(writer) {
 }
 
 /**
+ * 
+ * @param {String} password 
+ * @param {String} salt 
+ * @returns {String} The derived key
+ */
+function deriveKey(password, salt) {
+    let key = forge.pkcs5.pbkdf2(password, salt, 100000, 16);
+    return key;
+}
+
+/**
  * Updates FILES from packed data
  * @param {Uint8Array} packedData 
  */
