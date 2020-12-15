@@ -66,9 +66,13 @@ async function writePackedChunk(writer) {
     /*
     Packed Data Format:
     Len | Type | Info
+    16  :  X   : Salt for key derivation
+    16  :  X   : Initialization Vector for AES-CBC
+    32  :  X   : HMAC
+    --------------------Encrypted Data---------------------------
     4   : uint : Length of the file name + file data
     n   : str  : Null-terminated string containing the file name
-    n   :  X   | File data
+    n   :  X   : File data
     */
     const headerBytes = bytesFromString(PACKED_HEADER);
 
