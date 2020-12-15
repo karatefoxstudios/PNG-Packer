@@ -69,7 +69,6 @@ async function writePackedChunk(writer) {
     Len | Type | Info
     16  :  X   : Salt for key derivation
     16  :  X   : Initialization Vector for AES-CBC
-    32  :  X   : HMAC
     --------------------Encrypted Data---------------------------
     4   : uint : Length of the file name + file data
     n   : str  : Null-terminated string containing the file name
@@ -124,19 +123,6 @@ async function writePackedChunk(writer) {
 function deriveKey(password, salt) {
     let key = forge.pkcs5.pbkdf2(password, salt, 100000, 16);
     return key;
-}
-
-/**
- * Compute the HMAC of the data
- * @param {String} data 
- * @param {String} key 
- * @returns {String} The 32 bit HMAC
- */
-function computeHMAC(data, key) {
-    let hmac = forge.hmac.create();
-    hmac.start('sha256', key);
-    hmac.update(data);
-    return hmac.digest().getBytes();
 }
 
 /**
