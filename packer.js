@@ -120,7 +120,6 @@ function computeHMAC(data, key) {
     return hmac.digest().getBytes();
 }
 
-
 /**
  * Updates FILES from packed data
  * @param {Uint8Array} packedData 
