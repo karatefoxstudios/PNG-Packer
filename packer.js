@@ -16,7 +16,7 @@ async function imageChanged() {
     let fileHeader = await readFileBytes(PNG_FILE, 0, 8);
     for (let i=0; i<PNG_HEADER.length; i++) {
         if (PNG_HEADER[i] != fileHeader[i]) {
-            setErrorMessage('This file is not a PNG.')
+            setErrorMessage('This file is not a PNG.');
             return;
         }
     }
@@ -237,7 +237,7 @@ function updateFilesList() {
         let removeCol = document.createElement('td');
         let removeButton = document.createElement('button');
         let removeText = document.createTextNode('Delete');
-        removeButton.setAttribute('onclick', `removeFile(${i});`)
+        removeButton.setAttribute('onclick', `removeFile(${i});`);
         removeButton.appendChild(removeText);
         removeCol.appendChild(removeButton);
 
