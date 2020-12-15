@@ -1,6 +1,7 @@
 const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
 const PACKED_HEADER = 'paCk';
 const PREVIEW_LIMIT = 35840000;
+const DEFAULT_PASSWORD = 'default';
 
 /** @type {File} */
 var PNG_FILE;
@@ -77,6 +78,12 @@ async function writePackedChunk(writer) {
     const headerBytes = bytesFromString(PACKED_HEADER);
 
     let packedData = new Uint8Array();
+    let password = document.getElementById('packpassword').value;
+    let salt = forge.random.getBytesSync(16);
+    let key = deriveKey(password, salt);
+    let iv = forge.random.getBytesSync(16);
+
+    password = password ? password : DEFAULT_PASSWORD; // Force default password if none given
 
     for (let i=0; i<FILES.length; i++) {
         let file = FILES[i];
@@ -90,9 +97,21 @@ async function writePackedChunk(writer) {
     }
     let fileCRC = CRC32.buf(int8Concat(headerBytes, packedData));
 
+    // Encrypt packedData
+    let cipher = forge.cipher.createCipher('AES-CBC', key);
+    cipher.start({iv: iv});
+    cipher.update(forge.util.createBuffer(packedData, Uint8Array));
+    cipher.finish();
+    
+    let encData = cipher.output.getBytes();
+    let hmac = computeHMAC(encData, key);
+
     await writer.write(bytesFromInt(packedData.length, 4));
     await writer.write(headerBytes);
-    await writer.write(packedData);
+    await writer.write(bytesFromString(salt));
+    await writer.write(bytesFromString(iv));
+    await writer.write(bytesFromString(hmac));
+    await writer.write(bytesFromString(encData));
     await writer.write(bytesFromInt(fileCRC, 4));
 }
 
