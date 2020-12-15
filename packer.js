@@ -103,6 +103,14 @@ function deriveKey(password, salt) {
     return key;
 }
 
+function computeHMAC(data, key) {
+    let hmac = forge.hmac.create();
+    hmac.start('sha256', key);
+    hmac.update(data);
+    return hmac.digest().getBytes();
+}
+
+
 /**
  * Updates FILES from packed data
  * @param {Uint8Array} packedData 
