@@ -127,7 +127,7 @@ async function writePackedChunk(writer) {
     let hmacBytes = ENCODER.encode(hmacUtf8);
     let saltLenBytes = bytesFromInt(saltBytes.length, 1);
     let ivLenBytes = bytesFromInt(ivBytes.length, 1);
-    let hmacLenBytes = bytesFromInt(hmacBytes.length);
+    let hmacLenBytes = bytesFromInt(hmacBytes.length, 1);
 
 
     console.log('Enc Salt:');
