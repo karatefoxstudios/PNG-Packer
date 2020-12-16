@@ -75,6 +75,7 @@ async function writePackedChunk(writer) {
     ?   :  X   : Salt for key derivation
     1   : uint : Lengh of IV
     16  :  X   : Initialization Vector for AES-CBC
+    32  :  X   : HMAC
     --------------------Encrypted Data---------------------------
     4   : uint : Length of the file name
     n   : str  : String containing the file name
