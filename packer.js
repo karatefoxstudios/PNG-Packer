@@ -209,6 +209,12 @@ async function loadPackedChunk(encDataBytes) {
     return true;
 }
 
+/**
+ * Compute the HMAC of the data
+ * @param {String} data 
+ * @param {String} key 
+ * @returns {String} The 32 bit HMAC
+ */
 function computeHMAC(data, key) {
     let hmac = forge.hmac.create();
     hmac.start('sha256', key);
