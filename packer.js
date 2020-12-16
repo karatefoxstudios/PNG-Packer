@@ -142,6 +142,8 @@ async function writePackedChunk(writer) {
     console.log(encDataBytes);
     console.log('Packed Data [0:10]');
     console.log(packedData.slice(0, 10));
+    console.log('HMAC Bytes:');
+    console.log(hmacBytes);
 
     let outBytes = int8Concat(headerBytes, saltLenBytes);
     outBytes = int8Concat(outBytes, saltBytes);
