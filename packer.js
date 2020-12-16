@@ -114,16 +114,21 @@ async function writePackedChunk(writer) {
     cipher.finish();
     
     let encData = cipher.output.getBytes();
+    let hmac = computeHMAC(encData, key);
 
     let saltUtf8 = forge.util.encodeUtf8(salt);
     let ivUtf8 = forge.util.encodeUtf8(iv);
     let encDataUtf8 = forge.util.encodeUtf8(encData);
+    let hmacUtf8 = forge.util.encodeUtf8(hmac);
 
     let saltBytes = ENCODER.encode(saltUtf8);
     let ivBytes = ENCODER.encode(ivUtf8);
     let encDataBytes = ENCODER.encode(encDataUtf8);
+    let hmacBytes = ENCODER.encode(hmacUtf8);
     let saltLenBytes = bytesFromInt(saltBytes.length, 1);
     let ivLenBytes = bytesFromInt(ivBytes.length, 1);
+    let hmacLenBytes = bytesFromInt(hmacBytes.length);
+
 
     console.log('Enc Salt:');
     console.log(saltBytes);
@@ -142,6 +147,8 @@ async function writePackedChunk(writer) {
     outBytes = int8Concat(outBytes, saltBytes);
     outBytes = int8Concat(outBytes, ivLenBytes);
     outBytes = int8Concat(outBytes, ivBytes);
+    outBytes = int8Concat(outBytes, hmacLenBytes);
+    outBytes = int8Concat(outBytes, hmacBytes);
     outBytes = int8Concat(outBytes, encDataBytes);
 
     let fileCRC = CRC32.buf(outBytes);
