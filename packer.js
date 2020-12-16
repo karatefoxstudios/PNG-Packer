@@ -10,6 +10,9 @@ var CHUNKS = [];
 /** @type {Array} */
 var FILES = [];
 
+var ENCODER = new TextEncoder();
+var DECODER = new TextDecoder();
+
 async function imageChanged() {
     resetAll();
     PNG_FILE = document.getElementById('imageupload').files[0];
@@ -22,8 +25,9 @@ async function imageChanged() {
         }
     }
 
+    console.log('Trying to locate chunks');
     // The file matches the PNG header.
-    await locateChunks();
+    if (!await locateChunks()) return; // If password is incorrect, stop
 
     setPackingEnabled(true);
 
@@ -67,51 +71,149 @@ async function writePackedChunk(writer) {
     /*
     Packed Data Format:
     Len | Type | Info
-    16  :  X   : Salt for key derivation
+    1   : uint : Length of salt
+    ?   :  X   : Salt for key derivation
+    1   : uint : Lengh of IV
     16  :  X   : Initialization Vector for AES-CBC
     --------------------Encrypted Data---------------------------
-    4   : uint : Length of the file name + file data
-    n   : str  : Null-terminated string containing the file name
+    4   : uint : Length of the file name
+    n   : str  : String containing the file name
+    4   : uint : Length of the file data
     n   :  X   : File data
     */
-    const headerBytes = bytesFromString(PACKED_HEADER);
+    const headerBytes = ENCODER.encode(PACKED_HEADER);
 
     let packedData = new Uint8Array();
     let password = document.getElementById('packpassword').value;
     let salt = forge.random.getBytesSync(16);
-    let key = deriveKey(password, salt);
     let iv = forge.random.getBytesSync(16);
 
     password = password ? password : DEFAULT_PASSWORD; // Force default password if none given
+    let key = deriveKey(password, salt);
 
     for (let i=0; i<FILES.length; i++) {
         let file = FILES[i];
         let name = file.name;
-        let fileData = int8Concat(bytesFromString(name), new Uint8Array(1)); // Add name + null-termination
+        let fileData = int8Concat(bytesFromInt(name.length, 4), ENCODER.encode(name)); // Add name length + name
         let fileBytes = await blobToInt8(file);
-        fileData = int8Concat(fileData, fileBytes); // Combine null-terminated string to file bytes
-        fileData = int8Concat(bytesFromInt(fileData.length, 4), fileData); // Add the length of the data
+        fileData = int8Concat(fileData, bytesFromInt(fileBytes.length, 4)); // Add file length data
+        fileData = int8Concat(fileData, fileBytes); // Add the file data
 
         packedData = int8Concat(packedData, fileData);
     }
-    let fileCRC = CRC32.buf(int8Concat(headerBytes, packedData));
 
     // Encrypt packedData
     let cipher = forge.cipher.createCipher('AES-CBC', key);
     cipher.start({iv: iv});
-    cipher.update(forge.util.createBuffer(packedData, Uint8Array));
+    let buffer = forge.util.createBuffer(packedData);
+    console.log('Buffer:');
+    console.log(buffer);
+    cipher.update(buffer);
     cipher.finish();
     
     let encData = cipher.output.getBytes();
-    let hmac = computeHMAC(encData, key);
 
-    await writer.write(bytesFromInt(packedData.length, 4));
-    await writer.write(headerBytes);
-    await writer.write(bytesFromString(salt));
-    await writer.write(bytesFromString(iv));
-    await writer.write(bytesFromString(hmac));
-    await writer.write(bytesFromString(encData));
+    let saltUtf8 = forge.util.encodeUtf8(salt);
+    let ivUtf8 = forge.util.encodeUtf8(iv);
+    let encDataUtf8 = forge.util.encodeUtf8(encData);
+
+    let saltBytes = ENCODER.encode(saltUtf8);
+    let ivBytes = ENCODER.encode(ivUtf8);
+    let encDataBytes = ENCODER.encode(encDataUtf8);
+    let saltLenBytes = bytesFromInt(saltBytes.length, 1);
+    let ivLenBytes = bytesFromInt(ivBytes.length, 1);
+
+    console.log('Enc Salt:');
+    console.log(saltBytes);
+    console.log('Enc IV:');
+    console.log(ivBytes);
+    console.log('Enc Pass:');
+    console.log(password);
+    console.log('Enc Key:');
+    console.log(key);
+    console.log('Enc Data:');
+    console.log(encDataBytes);
+    console.log('Packed Data [0:10]');
+    console.log(packedData.slice(0, 10));
+
+    let outBytes = int8Concat(headerBytes, saltLenBytes);
+    outBytes = int8Concat(outBytes, saltBytes);
+    outBytes = int8Concat(outBytes, ivLenBytes);
+    outBytes = int8Concat(outBytes, ivBytes);
+    outBytes = int8Concat(outBytes, encDataBytes);
+
+    let fileCRC = CRC32.buf(outBytes);
+
+    await writer.write(bytesFromInt(encDataBytes.length+saltBytes.length+ivBytes.length+2, 4));
+    await writer.write(outBytes);
     await writer.write(bytesFromInt(fileCRC, 4));
+}
+
+/**
+ * Updates FILES from packed data
+ * @param {Uint8Array} encDataBytes 
+ * @returns {Boolean} Was successful? (Password correct)
+ */
+async function loadPackedChunk(encDataBytes) {
+    let saltLen = intFromBytes(encDataBytes.slice(0, 1));
+    let saltUtf8 = DECODER.decode(encDataBytes.slice(1, saltLen+1));
+    let ivLen = intFromBytes(encDataBytes.slice(1+saltLen, 2+saltLen));
+    let ivUtf8 = DECODER.decode(encDataBytes.slice(2+saltLen, 2+saltLen+ivLen));
+    let password = document.getElementById('pngpassword').value;
+    password = password ? password : DEFAULT_PASSWORD; // Force default password if none given
+    encDataUtf8 = DECODER.decode(encDataBytes.slice(2+saltLen+ivLen));
+
+    let salt = forge.util.decodeUtf8(saltUtf8);
+    let iv = forge.util.decodeUtf8(ivUtf8);
+    let encData = forge.util.decodeUtf8(encDataUtf8);
+
+    let key = deriveKey(password, salt);
+
+    console.log('Dec Salt:')
+    console.log(ENCODER.encode(saltUtf8));
+    console.log('Dec IV:')
+    console.log(ENCODER.encode(ivUtf8));
+    console.log('Dec Pass:')
+    console.log(password);
+    console.log('Dec Key:')
+    console.log(key);
+    console.log('Enc Data:');
+    console.log(ENCODER.encode(encDataUtf8));
+
+    let decipher = forge.cipher.createDecipher('AES-CBC', key);
+    decipher.start({iv: iv});
+    decipher.update(forge.util.createBuffer(encData));
+    if (!decipher.finish()) return false;
+
+    console.log('Success!');
+
+    let buffer = decipher.output;
+    console.log('Buffer');
+    console.log(buffer);
+
+    while (!buffer.isEmpty()) {
+        console.log('New file!');
+        let nameLength = buffer.getInt32();
+        let nameStr = buffer.getBytes(nameLength);
+        let nameUtf8 = forge.util.encodeUtf8(nameStr);
+        let fileLength = buffer.getInt32();
+        let fileBytes = bufferToInt8(buffer, fileLength);
+        let file = new Blob([fileBytes]);
+        file.name = nameUtf8;
+        FILES.push(file);
+    }
+
+    updateFilesList();
+    console.log('Done loading!');
+    return true;
+}
+
+function bufferToInt8(buffer, count) {
+    array = [];
+    for (let i=0; i<count; i++) {
+        array.push(buffer.getInt(8));
+    }
+    return new Uint8Array(array);
 }
 
 /**
@@ -126,26 +228,9 @@ function deriveKey(password, salt) {
 }
 
 /**
- * Updates FILES from packed data
- * @param {Uint8Array} packedData 
+ * Locate the chunks in the PNG image
+ * @returns {Boolean} Was successful? (Password correct)
  */
-async function loadPackedChunk(packedData) {
-    let index = 0;
-    while (index != packedData.length) {
-        let dataLength = intFromBytes(packedData.slice(index, index+4));
-        index += 4;
-        let termIndex = packedData.slice(index).indexOf(0) + index;
-        let fileName = stringFromBytes(packedData.slice(index, termIndex));
-        let fileData = packedData.slice(termIndex+1, index+dataLength);
-        index += dataLength;
-
-        let file = new Blob([fileData]);
-        file.name = fileName;
-        FILES.push(file);
-    }
-    updateFilesList();
-}
-
 async function locateChunks() {
     let filesize = PNG_FILE.size;
     let index = PNG_HEADER.length; // Skip over the PNG header
@@ -156,7 +241,7 @@ async function locateChunks() {
         index += 4;
         // Read the chunk header
         let headerBytes = await readFileBytes(PNG_FILE, index, index+4);
-        let header = stringFromBytes(headerBytes);
+        let header = DECODER.decode(headerBytes);
         index += 4;
         // Mark the chunk data indices
         let dataStart = index;
@@ -177,9 +262,13 @@ async function locateChunks() {
 
         // If the chunk is packed, extract packed chunks
         if (header == PACKED_HEADER) {
-            await loadPackedChunk(await readFileBytes(PNG_FILE, dataStart, dataEnd));
+            if (!await loadPackedChunk(await readFileBytes(PNG_FILE, dataStart, dataEnd))) {
+                setErrorMessage('The password is incorrect!');
+                return false;
+            };
         }
     }
+    return true;
 }
 
 function resetAll() {
@@ -294,32 +383,6 @@ function extractFile(index) {
 }
 
 /**
- * Convert chunk header bytes into a string.
- * @param {Uint8Array} bytes
- * @returns {String}
- */
-function stringFromBytes(bytes) {
-    headerString = "";
-    for (let i=0; i<bytes.length; i++) {
-        headerString += String.fromCharCode(bytes[i]);
-    }
-    return headerString;
-}
-
-/**
- * Convert a chunk header string into bytes.
- * @param {String} headerString
- * @returns {Uint8Array}
- */
-function bytesFromString(headerString) {
-    let bytes = new Uint8Array(headerString.length);
-    for (let i=0; i<headerString.length; i++) {
-        bytes[i] = headerString.charCodeAt(i);
-    }
-    return bytes;
-}
-
-/**
  * Read a range of bytes from a File.
  * @param {File} file
  * @param {Number} start
@@ -387,3 +450,29 @@ async function blobToInt8(blob) {
 }
 
 resetAll();
+
+
+/*
+// TEST
+
+let password = 'this is my password it is really long';
+let data = 'hello there';
+let salt = forge.random.getBytesSync(16);
+let iv = forge.random.getBytesSync(16);
+let key = deriveKey(password, salt);
+
+let cipher = forge.cipher.createCipher('AES-CBC', key);
+cipher.start({iv:iv});
+cipher.update(forge.util.createBuffer(data));
+cipher.finish();
+let enc = cipher.output.data;
+
+//key = forge.random.getBytesSync(16);
+
+let decipher = forge.cipher.createDecipher('AES-CBC', key);
+decipher.start({iv:iv});
+decipher.update(forge.util.createBuffer(enc));
+console.log(decipher.finish());
+
+console.log(decipher.output.data);
+*/
