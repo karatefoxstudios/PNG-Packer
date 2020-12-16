@@ -208,6 +208,13 @@ async function loadPackedChunk(encDataBytes) {
     return true;
 }
 
+function computeHMAC(data, key) {
+    let hmac = forge.hmac.create();
+    hmac.start('sha256', key);
+    hmac.update(data);
+    return hmac.digest().getBytes();
+}
+
 function bufferToInt8(buffer, count) {
     array = [];
     for (let i=0; i<count; i++) {
