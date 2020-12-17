@@ -116,19 +116,13 @@ async function writePackedChunk(writer) {
     let encData = cipher.output.getBytes();
     let hmac = computeHMAC(encData, key);
 
-    let saltUtf8 = forge.util.encodeUtf8(salt);
-    let ivUtf8 = forge.util.encodeUtf8(iv);
-    let encDataUtf8 = forge.util.encodeUtf8(encData);
-    let hmacUtf8 = forge.util.encodeUtf8(hmac);
-
-    let saltBytes = ENCODER.encode(saltUtf8);
-    let ivBytes = ENCODER.encode(ivUtf8);
-    let encDataBytes = ENCODER.encode(encDataUtf8);
-    let hmacBytes = ENCODER.encode(hmacUtf8);
+    let saltBytes = forgeToInt8(salt);
+    let ivBytes = forgeToInt8(iv);
+    let encDataBytes = forgeToInt8(encData);
+    let hmacBytes = forgeToInt8(hmac);
     let saltLenBytes = bytesFromInt(saltBytes.length, 1);
     let ivLenBytes = bytesFromInt(ivBytes.length, 1);
     let hmacLenBytes = bytesFromInt(hmacBytes.length, 1);
-
 
     console.log('Enc Salt:');
     console.log(saltBytes);
@@ -155,7 +149,7 @@ async function writePackedChunk(writer) {
 
     let fileCRC = CRC32.buf(outBytes);
 
-    await writer.write(bytesFromInt(encDataBytes.length+saltBytes.length+ivBytes.length+2, 4));
+    await writer.write(bytesFromInt(encDataBytes.length+saltBytes.length+ivBytes.length+hmacBytes.length+3, 4));
     await writer.write(outBytes);
     await writer.write(bytesFromInt(fileCRC, 4));
 }
@@ -167,29 +161,39 @@ async function writePackedChunk(writer) {
  */
 async function loadPackedChunk(encDataBytes) {
     let saltLen = intFromBytes(encDataBytes.slice(0, 1));
-    let saltUtf8 = DECODER.decode(encDataBytes.slice(1, saltLen+1));
+    let saltBytes = encDataBytes.slice(1, saltLen+1);
     let ivLen = intFromBytes(encDataBytes.slice(1+saltLen, 2+saltLen));
-    let ivUtf8 = DECODER.decode(encDataBytes.slice(2+saltLen, 2+saltLen+ivLen));
+    let ivBytes = encDataBytes.slice(2+saltLen, 2+saltLen+ivLen);
+    let hmacLen = intFromBytes(encDataBytes.slice(2+saltLen+ivLen, 3+saltLen+ivLen));
+    let hmacBytes = encDataBytes.slice(3+saltLen+ivLen, 3+saltLen+ivLen+hmacLen);
     let password = document.getElementById('pngpassword').value;
     password = password ? password : DEFAULT_PASSWORD; // Force default password if none given
-    encDataUtf8 = DECODER.decode(encDataBytes.slice(2+saltLen+ivLen));
+    encDataBytes = encDataBytes.slice(3+saltLen+ivLen+hmacLen);
 
-    let salt = forge.util.decodeUtf8(saltUtf8);
-    let iv = forge.util.decodeUtf8(ivUtf8);
-    let encData = forge.util.decodeUtf8(encDataUtf8);
+    let salt = int8ToForge(saltBytes);
+    let iv = int8ToForge(ivBytes);
+    let encData = int8ToForge(encDataBytes);
+    let hmac = int8ToForge(hmacBytes);
 
     let key = deriveKey(password, salt);
+    let hmac_calculated = computeHMAC(encData, key);
 
     console.log('Dec Salt:')
-    console.log(ENCODER.encode(saltUtf8));
+    console.log(saltBytes);
     console.log('Dec IV:')
-    console.log(ENCODER.encode(ivUtf8));
+    console.log(ivBytes);
     console.log('Dec Pass:')
     console.log(password);
     console.log('Dec Key:')
     console.log(key);
     console.log('Enc Data:');
-    console.log(ENCODER.encode(encDataUtf8));
+    console.log(encDataBytes);
+    console.log('Got HMAC:');
+    console.log(hmacBytes);
+    console.log('Calculated HMAC:');
+    console.log(forgeToInt8(hmac_calculated));
+
+    if (hmac_calculated != hmac) return false;
 
     let decipher = forge.cipher.createDecipher('AES-CBC', key);
     decipher.start({iv: iv});
@@ -230,6 +234,16 @@ function computeHMAC(data, key) {
     hmac.start('sha256', key);
     hmac.update(data);
     return hmac.digest().getBytes();
+}
+
+function forgeToInt8(str) {
+    let buf = forge.util.createBuffer(str);
+    return bufferToInt8(buf, buf.length());
+}
+
+function int8ToForge(bytes) {
+    let buf = forge.util.createBuffer(bytes);
+    return buf.getBytes();
 }
 
 function bufferToInt8(buffer, count) {
