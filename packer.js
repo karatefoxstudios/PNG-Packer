@@ -1,3 +1,7 @@
+if (typeof streamSaver == 'undefined') throw new Error('StreamSaver not loaded!');
+if (typeof CRC32 == 'undefined') throw new Error('CRC32 not loaded!');
+if (typeof forge == 'undefined') throw new Error('Forge not loaded!');
+
 const PNG_HEADER = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
 const PACKED_HEADER = 'paCk';
 const PREVIEW_LIMIT = 35840000;
