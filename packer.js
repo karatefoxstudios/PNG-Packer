@@ -105,8 +105,6 @@ async function writePackedChunk(writer) {
     let cipher = forge.cipher.createCipher('AES-CBC', key);
     cipher.start({iv: iv});
     let buffer = forge.util.createBuffer(packedData);
-    console.log('Buffer:');
-    console.log(buffer);
     cipher.update(buffer);
     cipher.finish();
     
@@ -117,21 +115,6 @@ async function writePackedChunk(writer) {
     let ivBytes = forgeToInt8(iv);
     let encDataBytes = forgeToInt8(encData);
     let hmacBytes = forgeToInt8(hmac);
-
-    console.log('Enc Salt:');
-    console.log(saltBytes);
-    console.log('Enc IV:');
-    console.log(ivBytes);
-    console.log('Enc Pass:');
-    console.log(password);
-    console.log('Enc Key:');
-    console.log(key);
-    console.log('Enc Data:');
-    console.log(encDataBytes);
-    console.log('Packed Data [0:10]');
-    console.log(packedData.slice(0, 10));
-    console.log('HMAC Bytes:');
-    console.log(hmacBytes);
 
     let outBytes = int8Concat(headerBytes, saltBytes);
     outBytes = int8Concat(outBytes, ivBytes);
@@ -166,21 +149,6 @@ async function loadPackedChunk(encDataBytes) {
     let key = deriveKey(password, salt);
     let hmac_calculated = computeHMAC(encData, key);
 
-    console.log('Dec Salt:')
-    console.log(saltBytes);
-    console.log('Dec IV:')
-    console.log(ivBytes);
-    console.log('Dec Pass:')
-    console.log(password);
-    console.log('Dec Key:')
-    console.log(key);
-    console.log('Enc Data:');
-    console.log(encDataBytes);
-    console.log('Got HMAC:');
-    console.log(hmacBytes);
-    console.log('Calculated HMAC:');
-    console.log(forgeToInt8(hmac_calculated));
-
     if (hmac_calculated != hmac) return false;
 
     let decipher = forge.cipher.createDecipher('AES-CBC', key);
@@ -188,14 +156,9 @@ async function loadPackedChunk(encDataBytes) {
     decipher.update(forge.util.createBuffer(encData));
     if (!decipher.finish()) return false;
 
-    console.log('Success!');
-
     let buffer = decipher.output;
-    console.log('Buffer');
-    console.log(buffer);
 
     while (!buffer.isEmpty()) {
-        console.log('New file!');
         let nameLength = buffer.getInt32();
         let nameStr = buffer.getBytes(nameLength);
         let nameUtf8 = forge.util.encodeUtf8(nameStr);
@@ -207,7 +170,6 @@ async function loadPackedChunk(encDataBytes) {
     }
 
     updateFilesList();
-    console.log('Done loading!');
     return true;
 }
 
@@ -476,29 +438,3 @@ async function blobToInt8(blob) {
 }
 
 resetAll();
-
-
-/*
-// TEST
-
-let password = 'this is my password it is really long';
-let data = 'hello there';
-let salt = forge.random.getBytesSync(16);
-let iv = forge.random.getBytesSync(16);
-let key = deriveKey(password, salt);
-
-let cipher = forge.cipher.createCipher('AES-CBC', key);
-cipher.start({iv:iv});
-cipher.update(forge.util.createBuffer(data));
-cipher.finish();
-let enc = cipher.output.data;
-
-//key = forge.random.getBytesSync(16);
-
-let decipher = forge.cipher.createDecipher('AES-CBC', key);
-decipher.start({iv:iv});
-decipher.update(forge.util.createBuffer(enc));
-console.log(decipher.finish());
-
-console.log(decipher.output.data);
-*/
