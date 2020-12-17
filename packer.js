@@ -71,11 +71,8 @@ async function writePackedChunk(writer) {
     /*
     Packed Data Format:
     Len | Type | Info
-    1   : uint : Length of salt
-    ?   :  X   : Salt for key derivation
-    1   : uint : Lengh of IV
+    16   :  X   : Salt for key derivation
     16  :  X   : Initialization Vector for AES-CBC
-    1   : uint : Length of HMAC
     32  :  X   : HMAC
     --------------------Encrypted Data---------------------------
     4   : uint : Length of the file name
@@ -120,9 +117,6 @@ async function writePackedChunk(writer) {
     let ivBytes = forgeToInt8(iv);
     let encDataBytes = forgeToInt8(encData);
     let hmacBytes = forgeToInt8(hmac);
-    let saltLenBytes = bytesFromInt(saltBytes.length, 1);
-    let ivLenBytes = bytesFromInt(ivBytes.length, 1);
-    let hmacLenBytes = bytesFromInt(hmacBytes.length, 1);
 
     console.log('Enc Salt:');
     console.log(saltBytes);
@@ -139,17 +133,14 @@ async function writePackedChunk(writer) {
     console.log('HMAC Bytes:');
     console.log(hmacBytes);
 
-    let outBytes = int8Concat(headerBytes, saltLenBytes);
-    outBytes = int8Concat(outBytes, saltBytes);
-    outBytes = int8Concat(outBytes, ivLenBytes);
+    let outBytes = int8Concat(headerBytes, saltBytes);
     outBytes = int8Concat(outBytes, ivBytes);
-    outBytes = int8Concat(outBytes, hmacLenBytes);
     outBytes = int8Concat(outBytes, hmacBytes);
     outBytes = int8Concat(outBytes, encDataBytes);
 
     let fileCRC = CRC32.buf(outBytes);
 
-    await writer.write(bytesFromInt(encDataBytes.length+saltBytes.length+ivBytes.length+hmacBytes.length+3, 4));
+    await writer.write(bytesFromInt(encDataBytes.length+64, 4));
     await writer.write(outBytes);
     await writer.write(bytesFromInt(fileCRC, 4));
 }
@@ -160,15 +151,12 @@ async function writePackedChunk(writer) {
  * @returns {Boolean} Was successful? (Password correct)
  */
 async function loadPackedChunk(encDataBytes) {
-    let saltLen = intFromBytes(encDataBytes.slice(0, 1));
-    let saltBytes = encDataBytes.slice(1, saltLen+1);
-    let ivLen = intFromBytes(encDataBytes.slice(1+saltLen, 2+saltLen));
-    let ivBytes = encDataBytes.slice(2+saltLen, 2+saltLen+ivLen);
-    let hmacLen = intFromBytes(encDataBytes.slice(2+saltLen+ivLen, 3+saltLen+ivLen));
-    let hmacBytes = encDataBytes.slice(3+saltLen+ivLen, 3+saltLen+ivLen+hmacLen);
+    let saltBytes = encDataBytes.slice(0, 16);
+    let ivBytes = encDataBytes.slice(16, 32);
+    let hmacBytes = encDataBytes.slice(32, 64);
     let password = document.getElementById('pngpassword').value;
     password = password ? password : DEFAULT_PASSWORD; // Force default password if none given
-    encDataBytes = encDataBytes.slice(3+saltLen+ivLen+hmacLen);
+    encDataBytes = encDataBytes.slice(64);
 
     let salt = int8ToForge(saltBytes);
     let iv = int8ToForge(ivBytes);
