@@ -1,0 +1,28 @@
+input[type=file]{
+	display:none;
+}
+
+input{
+	padding:0px;
+}
+
+button, .button{
+	background:#7a0d29;
+	border:none;
+	color:white;
+	font-family:"Mukta Vaani";
+	font-size:20px;
+	padding:0px 25px 0px 25px;
+	border-radius:10px;
+	cursor:pointer;
+	transition:.2s;
+	margin:15px;
+}
+button:hover, .button:hover{
+	padding:0px 35px 0px 35px;
+}
+
+.file-list button{
+	font-size:16px;
+	padding:0px 10px 0px 10px;
+}

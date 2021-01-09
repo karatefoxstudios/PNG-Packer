@@ -1,0 +1,152 @@
+body{
+	margin:0px;
+	padding:0px;
+	background:#feede9;
+	overflow-x:hidden;
+}
+h1{
+	font-family:lemon;
+	line-height:80px;
+	color:#7a0d29;
+	margin:5px;
+	margin-top:20px;
+}
+h1 {
+	font-size:45px;
+}
+h2{
+	font-family:"Mukta Vaani";
+	font-size:30px;
+	color:#222;
+	margin:5px;
+}
+p,em,label,input{
+	font-family:"Mukta Vaani";
+	margin:5px;
+	font-size:20px;
+	text-align:left;
+}
+
+#header{
+	width:100%;
+	height:64px;
+	background:#7a0d29;
+	position:fixed;
+	z-index:10;
+}
+
+#header span{
+	color:white;
+	font-size:22px;
+	font-family:"Mukta Vaani";
+	padding:15px 25px 15px 25px;
+	margin-top:0px;
+	display:inline-block;
+	vertical-align: middle;
+	transition:.2s;
+	cursor:pointer;
+}
+
+#header span:hover{
+	color:black;
+	background:white;
+}
+
+.spacer{
+    height:64px;
+}
+
+#contentMain{
+	width:90vmin;
+	background:#ffffff;
+	padding:25px;
+}
+table{
+	width:100%;
+}
+@font-face {
+  font-family: lemon;
+  src: url(../fonts/LEMONMILK-Light.otf);
+}
+
+.skill{
+	font-family:"Mukta Vaani";
+	font-size:14px;
+	background:#7a0d29;
+	color:white;
+	border-radius:5px;
+	padding:2px 8px 2px 8px;
+	margin-left:5px;
+}
+.statistic{
+	text-align:center;
+	background:#f7941d;
+	color:white;
+	font-family: lemon;
+	height:120px;
+	width:120px;
+	border-radius:100%;
+	display:inline-block;
+	margin:25px;
+	transition:.35s;
+}
+.statistic:hover{
+	border-radius:25%;
+}
+.bigStat{
+	margin-top:15px;
+	font-size:30px;
+}
+.statistic span{
+	display:inline-block;
+}
+#footer p{
+	text-align:center;
+	padding:25px;
+	color:#444;
+}
+@media only screen and (max-width: 650px) {
+  #header {
+	display: none;
+  }
+}
+
+html{
+	scroll-behavior:smooth
+}
+
+h1 div{
+	display:inline-block;
+}
+#wordScroller{
+	position:relative;
+	top:-5px;
+	transition:.5s;
+	text-align:center;
+}
+
+hr{
+	width:100%;
+	border-top:1px solid #ddd;
+	border-left:none;
+	border-right:none;
+}
+
+a{
+	color:inherit;
+}
+
+a:hover{
+	text-decoration:underline;
+}
+
+.image-preview img{
+	max-width:30%;
+	margin:10px;
+}
+
+.file-list{
+	background:#eee;
+	width:75%;
+	margin:15px;
+}

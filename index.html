@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>PNG Packer | Karate Fox Studios</title>
+        <!--Load styles and fonts-->
+        <link rel="stylesheet" href="styles/main.css">
+        <link rel="stylesheet" href="styles/packer.css">
+        <link rel="stylesheet" href="styles/inputs.css">
+        <link href="https://fonts.googleapis.com/css?family=Poiret+One" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Mukta+Vaani:300" rel="stylesheet">
+        <!--Load external dependencies-->
+        <script src="https://cdn.jsdelivr.net/npm/streamsaver@2.0.5/StreamSaver.min.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/crc-32@1.2.0/crc32.min.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/node-forge@0.7.0/dist/forge.min.js" defer></script>
+        <!--Load our scripts-->
+        <script src="js/utils.js" defer></script>
+        <script src="js/packer.js" defer></script>
+    </head>
+    <body>
+        <div id="header" style="text-align:center;">
+            <a><span>Link1</span></a>
+            <a><span>Link2</span></a>
+            <a><span>Link3</span></a>
+            <a><span>Link4</span></a>
+        </div>
+        <div class="spacer"></div>
+        <table><tr align="center"><td>
+        <h1>PNG Packer</h1>
+        <div id="contentMain">
+            <h2>What is the PNG Packer?</h2>
+            <p>
+                There are many ways to secretly store data, and many ways to send encrypted data to other people. However, many of these methods draw too much attention to the fact that they are encrypted! For example, an encrypted .RAR file asks you for a password before you can open it, which makes it obvious that the file is storing something important. The question the PNG Packer intends to address is: how can we encrypt, store, and send files in a securely yet seemingly innocent way?
+                <br><br>Let's take a look at the PNG file format for inspiration. PNG files follow a certain specification involving "chunks". These chunks store various types of information and have various attributes. One of these attributes is whether or not the chunk is "private", which, when set, tells image viewers and processing programs to ignore the chunk but not delete it. This means that, in theory, the contents of one file could be encrypted and stored in a custom, private PNG chunk, and then a new PNG could be generated which would contain the "stashed" contents of the file. This process could be reversed, where a PNG with a "stashed" file could be scanned for the custom chunk, and the data in that chunk could be "extracted", decrypted and outputted as the original file format.
+                <br><br>This is exactly what the PNG Packer does. This method of "stashing" and "extracting" a PNG creates a secure yet innocent-looking way of sending secret files contained inside of PNG images.
+            </p>
+            <h2>Try it Out!</h2>
+
+            <div class="png-selection">
+                <!--PNG Image Selection Box-->
+                <label for="imageupload" class="button">Choose PNG</label>
+                <br>
+                <input onchange="imageChanged();" type="file" accept=".png" id="imageupload">
+                <br>
+                <label>Password:</label><input id="pngpassword">
+                <p id="errormessage">Loading scripts...</p>
+                <br id="errorbreak">
+            </div>
+            <div class="image-preview">
+                <!--Image Preview-->
+                <img src=''>
+            </div>
+
+            <div>
+                <!--Add File Box-->
+                <label for="filesupload" class="button">Add files:</label>
+                <input type="file" id="filesupload" onchange="filesChanged();" multiple>
+            </div>
+            <div class="file-list">
+                <!--File List-->
+                <table>
+                    <tbody>
+                        <tr>
+                            <td><p>File 1</p></td>
+                            <td><p>0</p></td>
+                            <td><button>Extract</button></td>
+                            <td><button>Delete</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pack-button">
+                <!--Pack Button-->
+                <label>Password:</label><input id="packpassword">
+                <br>
+                <button onclick="packFiles();" disabled>Pack PNG</button>
+            </div>
+                </tbody>
+            </table>
+        </div>
+        </td></tr></table>
+        <div id="footer">
+            <p>&#169; KARATE FOX STUDIOS 2020. ALL RIGHTS RESERVED.</p>
+        </div>
+    </body>
+</html>

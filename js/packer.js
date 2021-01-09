@@ -20,7 +20,7 @@ var DECODER = new TextDecoder();
 async function imageChanged() {
     resetAll();
     PNG_FILE = document.getElementById('imageupload').files[0];
-    
+
     let fileHeader = await readFileBytes(PNG_FILE, 0, 8);
     for (let i=0; i<PNG_HEADER.length; i++) {
         if (PNG_HEADER[i] != fileHeader[i]) {
@@ -31,7 +31,10 @@ async function imageChanged() {
 
     console.log('Trying to locate chunks');
     // The file matches the PNG header.
-    if (!await locateChunks()) return; // If password is incorrect, stop
+    if (!await locateChunks()){
+        // If password is incorrect, stop and alert the user.
+        return;
+    }
 
     setPackingEnabled(true);
 
@@ -69,7 +72,7 @@ async function packFiles() {
 
 /**
  * Write the contents of the packed chunk to stream
- * @param {WritableStreamDefaultWriter} writer 
+ * @param {WritableStreamDefaultWriter} writer
  */
 async function writePackedChunk(writer) {
     /*
@@ -111,7 +114,7 @@ async function writePackedChunk(writer) {
     let buffer = forge.util.createBuffer(packedData);
     cipher.update(buffer);
     cipher.finish();
-    
+
     let encData = cipher.output.getBytes();
     let hmac = computeHMAC(encData, key);
 
@@ -134,7 +137,7 @@ async function writePackedChunk(writer) {
 
 /**
  * Updates FILES from packed data
- * @param {Uint8Array} encDataBytes 
+ * @param {Uint8Array} encDataBytes
  * @returns {Boolean} Was successful? (Password correct)
  */
 async function loadPackedChunk(encDataBytes) {
@@ -179,8 +182,8 @@ async function loadPackedChunk(encDataBytes) {
 
 /**
  * Compute the HMAC of the data
- * @param {String} data 
- * @param {String} key 
+ * @param {String} data
+ * @param {String} key
  * @returns {String} The 32 bit HMAC
  */
 function computeHMAC(data, key) {
@@ -210,8 +213,8 @@ function bufferToInt8(buffer, count) {
 
 /**
  * Perform key derivation
- * @param {String} password 
- * @param {String} salt 
+ * @param {String} password
+ * @param {String} salt
  * @returns {String} The derived key
  */
 function deriveKey(password, salt) {
@@ -288,7 +291,7 @@ function updateFilesList() {
     let fileList = document.querySelector('.file-list table tbody');
 
     // Delete listed files
-    let listed = document.querySelectorAll('.file-list tr:not(.file-header)')
+    let listed = document.querySelectorAll('.file-list tr')
     for (let i=0; i<listed.length; i++) {
         listed[i].remove();
     }
@@ -306,7 +309,8 @@ function updateFilesList() {
         // Add File Size
         let sizeCol = document.createElement('td');
         let sizeP = document.createElement('p');
-        let sizeText = document.createTextNode(FILES[i].size);
+        let fileSizeText = utils.humanFileSize(FILES[i].size, true);
+        let sizeText = document.createTextNode(fileSizeText);
         sizeP.appendChild(sizeText);
         sizeCol.appendChild(sizeP);
 
@@ -358,7 +362,7 @@ function setErrorMessage(msg) {
 
 /**
  * Remove the selected file and update list.
- * @param {Number} index 
+ * @param {Number} index
  */
 function removeFile(index) {
     FILES.splice(index, 1);
@@ -367,7 +371,7 @@ function removeFile(index) {
 
 /**
  * Extract the selected file
- * @param {Number} index 
+ * @param {Number} index
  */
 function extractFile(index) {
     let stream = streamSaver.createWriteStream(FILES[index].name, {size: FILES[index].length});
@@ -403,8 +407,8 @@ function intFromBytes(bytes) {
 /**
  * Convert an integer to an array of bytes.
  * @param {Number} integer
- * @param {Number} count 
- * @returns {Uint8Array} 
+ * @param {Number} count
+ * @returns {Uint8Array}
  */
 function bytesFromInt(integer, count) {
     let bytes = new Uint8Array(count);
@@ -416,8 +420,8 @@ function bytesFromInt(integer, count) {
 
 /**
  * Concatenate two Uint8Array objects
- * @param {Uint8Array} array1 
- * @param {Uint8Array} array2 
+ * @param {Uint8Array} array1
+ * @param {Uint8Array} array2
  * @returns {Uint8Array}
  */
 function int8Concat(array1, array2) {
@@ -434,7 +438,7 @@ function int8Concat(array1, array2) {
 
 /**
  * Convert a Blob to a Uint8Array
- * @param {Blob} blob 
+ * @param {Blob} blob
  * @returns {Uint8Array}
  */
 async function blobToInt8(blob) {
