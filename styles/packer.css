@@ -1,0 +1,19 @@
+#demoContainer{
+	border:3px dashed grey;
+	padding:25px;
+}
+
+#demoContainer p{
+	text-align:center !important;
+}
+
+.image-preview img{
+	max-width:30%;
+	margin:10px;
+}
+
+.file-list{
+	background:#eee;
+	width:95%;
+	margin:15px;
+}

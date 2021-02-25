@@ -4,8 +4,9 @@
         <title>PNG Packer | Karate Fox Studios</title>
         <!--Load styles and fonts-->
         <link rel="stylesheet" href="styles/main.css">
-        <link rel="stylesheet" href="styles/packer.css">
         <link rel="stylesheet" href="styles/inputs.css">
+        <link rel="stylesheet" href="styles/graphics.css">
+        <link rel="stylesheet" href="styles/packer.css">
         <link href="https://fonts.googleapis.com/css?family=Poiret+One" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css?family=Mukta+Vaani:300" rel="stylesheet">
         <!--Load external dependencies-->
@@ -15,67 +16,113 @@
         <!--Load our scripts-->
         <script src="js/utils.js" defer></script>
         <script src="js/packer.js" defer></script>
+        <script src="js/packerDriver.js" defer></script>
+        <!-- Scale viewport, add branding -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="/favicon.png">
+
     </head>
     <body>
         <div id="header" style="text-align:center;">
-            <a><span>Link1</span></a>
-            <a><span>Link2</span></a>
-            <a><span>Link3</span></a>
-            <a><span>Link4</span></a>
+            <table cellspacing=0 cellpadding=0>
+                <tr><td class="headerLogo" align="left">
+                    <img style="padding-left:10px;width:250px;" src="assets/logo_header.png">
+                </td>
+                <td class="headerLinks">
+                    <a href="#intro"><span>Introduction</span></a>
+                    <a href="#demo"><span>Demo</span></a>
+                    <a href="#credits"><span>Credits</span></a>
+                </td><td class="headerSpacer"></td></tr>
+            </table>
         </div>
         <div class="spacer"></div>
         <table><tr align="center"><td>
-        <h1>PNG Packer</h1>
+        <h1>The PNG Packer</h1>
         <div id="contentMain">
+            <div id="intro" class="marker"></div>
             <h2>What is the PNG Packer?</h2>
             <p>
                 There are many ways to secretly store data, and many ways to send encrypted data to other people. However, many of these methods draw too much attention to the fact that they are encrypted! For example, an encrypted .RAR file asks you for a password before you can open it, which makes it obvious that the file is storing something important. The question the PNG Packer intends to address is: how can we encrypt, store, and send files in a securely yet seemingly innocent way?
-                <br><br>Let's take a look at the PNG file format for inspiration. PNG files follow a certain specification involving "chunks". These chunks store various types of information and have various attributes. One of these attributes is whether or not the chunk is "private", which, when set, tells image viewers and processing programs to ignore the chunk but not delete it. This means that, in theory, the contents of one file could be encrypted and stored in a custom, private PNG chunk, and then a new PNG could be generated which would contain the "stashed" contents of the file. This process could be reversed, where a PNG with a "stashed" file could be scanned for the custom chunk, and the data in that chunk could be "extracted", decrypted and outputted as the original file format.
-                <br><br>This is exactly what the PNG Packer does. This method of "stashing" and "extracting" a PNG creates a secure yet innocent-looking way of sending secret files contained inside of PNG images.
+                <br><br>Let's take a look at the PNG file format for inspiration. PNG files follow a certain specification involving "chunks". These chunks store various types of information and have various attributes. One of these attributes is whether or not the chunk is "private", which, when set, tells image viewers and processing programs to ignore the chunk but not delete it. This means that, in theory, the contents of one file could be encrypted and stored in a custom, private PNG chunk, and then a new PNG could be generated which would contain the "packed" contents of the file. This process could be reversed, where a PNG with a "packed" file could be scanned for the custom chunk, and the data in that chunk could be "extracted", decrypted and outputted as the original file format.
+                <br><br>This is exactly what the PNG Packer does. This method of "packing" and "extracting" a PNG creates a secure yet innocent-looking way of sending secret files contained inside of PNG images.
             </p>
+            <div id="demo" class="marker"></div>
+            <br>
             <h2>Try it Out!</h2>
+            <div id="demoContainer">
+                <p class="error" id="errormessage"></p>
+                <div screen="png-selection">
+                    <!--PNG Image Selection Box-->
+                    <p>First, pick a PNG file that you would like to "pack" files into:</p>
+                    <label for="imageupload" class="button">Choose PNG</label>
+                    <br>
+                    <input onchange="pngUploaded();" type="file" accept=".png" id="imageupload">
+                </div>
 
-            <div class="png-selection">
-                <!--PNG Image Selection Box-->
-                <label for="imageupload" class="button">Choose PNG</label>
-                <br>
-                <input onchange="imageChanged();" type="file" accept=".png" id="imageupload">
-                <br>
-                <label>Password:</label><input id="pngpassword">
-                <p id="errormessage">Loading scripts...</p>
-                <br id="errorbreak">
-            </div>
-            <div class="image-preview">
-                <!--Image Preview-->
-                <img src=''>
-            </div>
+                <div screen="passwordGuess">
+                    <p>This PNG is protected with a password. Enter the password to unlock its "packed" contents.</p>
+                    <label>Password:</label><input type="password" id="pngpassword">
+                    <button onclick="pngUploaded();">Unlock</button>
+                </div>
 
-            <div>
-                <!--Add File Box-->
-                <label for="filesupload" class="button">Add files:</label>
-                <input type="file" id="filesupload" onchange="filesChanged();" multiple>
+                <div screen="passwordSet">
+                    <p>Would you like to encrypt your files with a password?</p>
+                    <label>Password:</label><input type="password" id="packpassword"><br>
+                    <em>(Leave blank for no password)</em><br>
+                    <button onclick="readyToPack();">Pack that PNG!</button><br>
+                    <button class="neutral" onclick="switchScreenTo('info');">Go Back</button>
+                </div>
+
+                <div screen="loading">
+                    <p>Processing...</p>
+                    <img class="loadingIcon" src="assets/logo_blank.png">
+                </div>
+
+                <div screen="info">
+                    <p>Now, choose files to "pack" into your PNG:</p>
+
+                    <div class="image-preview">
+                        <img src=''><br>
+                        <em id="image-preview-caption"></em>
+                    </div>
+                    <div class="file-list">
+                        <!--File List-->
+                        <table>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <label for="filesupload" class="button">Add files</label>
+                    <input type="file" id="filesupload" onchange="filesChanged();" multiple>
+                    <br>
+                    <button class="pack-button" onclick="switchScreenTo('passwordSet');" disabled>Export Packed PNG</button>
+                    <br>
+                    <button class="neutral" onclick="switchScreenTo('png-selection');">Use Different PNG</button>
+                </div>
+
+                <div screen="finish">
+                    <h2>Packing Successful!</h2>
+                    <p>Your PNG file should have downloaded!</p>
+                    <button onclick="resetAll();switchScreenTo('png-selection');">Pack Another PNG</button>
+                </div>
+
             </div>
-            <div class="file-list">
-                <!--File List-->
-                <table>
-                    <tbody>
-                        <tr>
-                            <td><p>File 1</p></td>
-                            <td><p>0</p></td>
-                            <td><button>Extract</button></td>
-                            <td><button>Delete</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="pack-button">
-                <!--Pack Button-->
-                <label>Password:</label><input id="packpassword">
-                <br>
-                <button onclick="packFiles();" disabled>Pack PNG</button>
-            </div>
-                </tbody>
-            </table>
+            <br>
+            <em style="font-size:16px;">Notes: <br>
+             - Everything is done client-side. We don't upload/store any files that you use in this demo!<br>
+             - This demo works best for small files (less than 10mb).
+            </em>
+
+            <div id="credits" class="marker"></div>
+            <br><br>
+            <h2>Credits</h2>
+            <p>
+                The PNG Packer, at its core, was conceptualized, created, and ported to JavaScript by <a href="https://www.linkedin.com/in/christopher-chamberlain-5273771b7">Christopher Chamberlain</a>.
+                This webpage was branded and stylized by <a href="https://www.linkedin.com/in/kevinchampagne749">Kevin Champagne</a>, and published under <a href="https://karatefoxstudios.com">Karate Fox Studios</a>.
+                <br><br>
+                Also, check out our <a href="https://github.com/karatefoxstudios/png-packer">source code on GitHub!</a>
+            </p>
         </div>
         </td></tr></table>
         <div id="footer">

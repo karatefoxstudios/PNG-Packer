@@ -1,7 +1,7 @@
 // This file contains useful helper functions.
 
 var utils = {
-	humanFileSize: function(byteSize, si=false, dp=1) {
+	humanFileSize: function(byteSize, si=true, dp=1) {
 		const thresh = si ? 1000 : 1024;
 
 		if (Math.abs(byteSize) < thresh) {

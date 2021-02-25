@@ -17,39 +17,62 @@ var FILES = [];
 var ENCODER = new TextEncoder();
 var DECODER = new TextDecoder();
 
-async function imageChanged() {
+/**
+ * Scan the current PNG target for files
+ * @param {String} Password to use for decryption
+ * @returns {Object} Error data
+ *  - Code -1: Tried blank password, but PNG is password-protected (not really even an error)
+ *  - Code 0: Incorrect Password
+ *  - Code 1: Invalid File
+ */
+async function imageChanged(password) {
     resetAll();
     PNG_FILE = document.getElementById('imageupload').files[0];
+    var name = PNG_FILE.name;
+    var size = utils.humanFileSize(PNG_FILE.size);
 
     let fileHeader = await readFileBytes(PNG_FILE, 0, 8);
     for (let i=0; i<PNG_HEADER.length; i++) {
         if (PNG_HEADER[i] != fileHeader[i]) {
-            setErrorMessage('This file is not a PNG.');
-            return;
+            return {code:1,message:"This file is not a PNG"};
         }
     }
 
     console.log('Trying to locate chunks');
     // The file matches the PNG header.
-    if (!await locateChunks()){
-        // If password is incorrect, stop and alert the user.
-        return;
+    if (!await locateChunks(password)){
+        if(!password){
+            // Tried blank password, but PNG is password-protected
+            return {code:-1,message:"This PNG is password protected"};
+        }
+        else{
+            // Attempted password was incorrect
+            return {code:0,message:"The password you provided was incorrect."};
+        }
     }
 
-    setPackingEnabled(true);
 
     // If PNG is under the preview limit, display it
+    let image_caption = document.getElementById("image-preview-caption");
     if (PNG_FILE.size < PREVIEW_LIMIT) {
         let reader = new FileReader();
         reader.onload = (event) => {
             let image = document.querySelector('.image-preview img');
             image.setAttribute('src', event.target.result);
+            image_caption.innerText = "Loaded " + name + " (" + size + ")";
         };
         reader.readAsDataURL(PNG_FILE);
+    } else{
+        image_caption.innerText = "[PNG file to big to display preview]";
     }
+    return null; // No error
 }
 
-async function packFiles() {
+/**
+ * Packs the files into the PNG
+ * @param {String} the password to use
+ */
+async function packFiles(password) {
     let stream = streamSaver.createWriteStream(PNG_FILE.name.substring(0, PNG_FILE.name.lastIndexOf('.')) + '_packed.png');
     let writer = await stream.getWriter();
 
@@ -62,7 +85,7 @@ async function packFiles() {
             // Include this chunk in the output. Ignore any current packed chunk.
             if (chunk.header == 'IEND') {
                 // Write the packed chunk just before the end of the file
-                if (FILES.length > 0) await writePackedChunk(writer);
+                if (FILES.length > 0) await writePackedChunk(writer, password);
             }
             await writer.write(await blobToInt8(PNG_FILE.slice(chunk.dataStart-8, chunk.dataEnd+4))); // Send this chunk to the output file
         }
@@ -73,8 +96,9 @@ async function packFiles() {
 /**
  * Write the contents of the packed chunk to stream
  * @param {WritableStreamDefaultWriter} writer
+ * @param {String} the password to use
  */
-async function writePackedChunk(writer) {
+async function writePackedChunk(writer, password) {
     /*
     Packed Data Format:
     Len | Type | Info
@@ -90,11 +114,10 @@ async function writePackedChunk(writer) {
     const headerBytes = ENCODER.encode(PACKED_HEADER);
 
     let packedData = new Uint8Array();
-    let password = document.getElementById('packpassword').value;
     let salt = forge.random.getBytesSync(16);
     let iv = forge.random.getBytesSync(16);
-
-    password = password ? password : DEFAULT_PASSWORD; // Force default password if none given
+    let passwordOmitted = password == "" || password == undefined;
+    password = passwordOmitted ? DEFAULT_PASSWORD : password; // Force default password if none given
     let key = deriveKey(password, salt);
 
     for (let i=0; i<FILES.length; i++) {
@@ -138,13 +161,13 @@ async function writePackedChunk(writer) {
 /**
  * Updates FILES from packed data
  * @param {Uint8Array} encDataBytes
- * @returns {Boolean} Was successful? (Password correct)
+ * @param {String} password to use
+ * * @returns {Boolean} Was successful? (Password correct)
  */
-async function loadPackedChunk(encDataBytes) {
+async function loadPackedChunk(encDataBytes, password) {
     let saltBytes = encDataBytes.slice(0, 16);
     let ivBytes = encDataBytes.slice(16, 32);
     let hmacBytes = encDataBytes.slice(32, 64);
-    let password = document.getElementById('pngpassword').value;
     password = password ? password : DEFAULT_PASSWORD; // Force default password if none given
     encDataBytes = encDataBytes.slice(64);
 
@@ -224,9 +247,10 @@ function deriveKey(password, salt) {
 
 /**
  * Locate the chunks in the PNG image
+ * @param {String} the password to use
  * @returns {Boolean} Was successful? (Password correct)
  */
-async function locateChunks() {
+async function locateChunks(password) {
     let filesize = PNG_FILE.size;
     let index = PNG_HEADER.length; // Skip over the PNG header
     while (index != filesize) {
@@ -257,8 +281,7 @@ async function locateChunks() {
 
         // If the chunk is packed, extract packed chunks
         if (header == PACKED_HEADER) {
-            if (!await loadPackedChunk(await readFileBytes(PNG_FILE, dataStart, dataEnd))) {
-                setErrorMessage('The password is incorrect!');
+            if (!await loadPackedChunk(await readFileBytes(PNG_FILE, dataStart, dataEnd), password)) {
                 return false;
             };
         }
@@ -274,7 +297,6 @@ function resetAll() {
     updateFilesList();
     document.querySelector('.image-preview img').setAttribute('src', ''); // Remove preview image
     //document.getElementById('imageupload').value = ''; // Clear image input box
-    setErrorMessage('');
 }
 
 async function filesChanged() {
@@ -337,28 +359,17 @@ function updateFilesList() {
         childRow.appendChild(removeCol);
         fileList.appendChild(childRow);
     }
+    setPackingEnabled(FILES.length > 0);
 }
 
 function setPackingEnabled(status) {
-    let items = document.querySelectorAll('.pack-button *');
+    let items = document.querySelectorAll('.pack-button');
     for (let i=0; i<items.length; i++) {
         if (status) items[i].removeAttribute('disabled');
         else items[i].setAttribute('disabled', '');
     }
 }
 
-function setErrorMessage(msg) {
-    item = document.getElementById('errormessage');
-    brk = document.getElementById('errorbreak');
-    if (msg) {
-        item.removeAttribute('style');
-        item.textContent = msg;
-        brk.setAttribute('style', 'display: none;');
-    } else {
-        item.setAttribute('style', 'display: none;');
-        brk.removeAttribute('style');
-    }
-}
 
 /**
  * Remove the selected file and update list.

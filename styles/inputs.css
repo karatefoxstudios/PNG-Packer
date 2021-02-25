@@ -26,3 +26,16 @@ button:hover, .button:hover{
 	font-size:16px;
 	padding:0px 10px 0px 10px;
 }
+
+button:disabled,
+button[disabled]{
+	opacity:0.5 !important;
+	cursor:default !important;
+	padding:0px 25px 0px 25px !important;
+}
+
+.neutral{
+	background:#666666;
+	font-size:18px;
+	margin:0px;
+}

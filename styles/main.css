@@ -29,7 +29,6 @@ p,em,label,input{
 
 #header{
 	width:100%;
-	height:64px;
 	background:#7a0d29;
 	position:fixed;
 	z-index:10;
@@ -39,7 +38,7 @@ p,em,label,input{
 	color:white;
 	font-size:22px;
 	font-family:"Mukta Vaani";
-	padding:15px 25px 15px 25px;
+	padding:12px 25px 12px 25px;
 	margin-top:0px;
 	display:inline-block;
 	vertical-align: middle;
@@ -50,6 +49,23 @@ p,em,label,input{
 #header span:hover{
 	color:black;
 	background:white;
+}
+
+.headerSpacer, .headerLogo{
+	width:300px;
+}
+
+.headerLinks{
+	text-align:center;
+}
+
+@media only screen and (max-width: 1200px) {
+	.headerSpacer{
+		width:0px;
+	}
+	.headerLinks{
+		text-align:right;
+	}
 }
 
 .spacer{
@@ -67,6 +83,11 @@ table{
 @font-face {
   font-family: lemon;
   src: url(../fonts/LEMONMILK-Light.otf);
+}
+
+.marker{
+	position:relative;
+	top:-100px;
 }
 
 .skill{
@@ -140,13 +161,11 @@ a:hover{
 	text-decoration:underline;
 }
 
-.image-preview img{
-	max-width:30%;
-	margin:10px;
-}
-
-.file-list{
-	background:#eee;
-	width:75%;
-	margin:15px;
+.error{
+	display:none;
+	width:90%;
+	background:#d1434a;
+	padding:15px;
+	margin:5px;
+	color:white;
 }
